@@ -35,7 +35,7 @@ export async function searchByName(ctx) {
     if (ctx.callbackQuery) {
         try {
             if (ctx.callbackQuery.message?.text) {
-                await ctx.deleteMessage().catch(() => {});
+                await ctx.deleteMessage().catch(() => { });
                 const msg = await ctx.replyWithPhoto(cachedNameSearchFileId || new InputFile(NAME_SEARCH_IMAGE_PATH), { caption, ...options });
                 if (!cachedNameSearchFileId && msg.photo?.length > 0) {
                     cachedNameSearchFileId = msg.photo[msg.photo.length - 1].file_id;
@@ -56,7 +56,7 @@ export async function searchByName(ctx) {
             }
         } catch (error) {
             console.error("[Search] searchByName edit error:", error.message);
-            await ctx.deleteMessage().catch(() => {});
+            await ctx.deleteMessage().catch(() => { });
         }
     } else {
         const msg = await ctx.replyWithPhoto(cachedNameSearchFileId || new InputFile(NAME_SEARCH_IMAGE_PATH), {
@@ -105,12 +105,13 @@ export async function executeSearchByName(ctx) {
 
             const successMessage = generateFilmsListMessage(userText, films, 1);
 
-            await ctx.api.deleteMessage(ctx.chat.id, waitMsg.message_id).catch(() => {});
-            
+            await ctx.api.deleteMessage(ctx.chat.id, waitMsg.message_id).catch(() => { });
+
             const msg = await ctx.replyWithPhoto(cachedNameSearchFileId || new InputFile(NAME_SEARCH_IMAGE_PATH), {
                 caption: successMessage,
                 parse_mode: "HTML",
                 reply_markup: FilmsKeyboard.searchKeyboard(films, ctx),
+                reply_parameters: ctx.message ? { message_id: ctx.message.message_id } : undefined,
             });
             if (!cachedNameSearchFileId && msg.photo?.length > 0) {
                 cachedNameSearchFileId = msg.photo[msg.photo.length - 1].file_id;
@@ -119,14 +120,14 @@ export async function executeSearchByName(ctx) {
             await ctx.api.editMessageText(ctx.chat.id, waitMsg.message_id, notFoundMessage, {
                 parse_mode: "HTML",
                 reply_markup: KeyboardFactory.createBacktoHomeMenu(),
-            }).catch(() => {});
+            }).catch(() => { });
         }
     } catch (error) {
         console.error("[Search] Name search error:", error.message);
         await ctx.reply("❌ Xatolik yuz berdi", {
             reply_markup: KeyboardFactory.createBacktoHomeMenu(),
             reply_parameters: ctx.message ? { message_id: ctx.message.message_id } : undefined,
-        }).catch(() => {});
+        }).catch(() => { });
     }
 }
 
@@ -149,7 +150,7 @@ export async function searchByCode(ctx) {
     if (ctx.callbackQuery) {
         try {
             if (ctx.callbackQuery.message?.text) {
-                await ctx.deleteMessage().catch(() => {});
+                await ctx.deleteMessage().catch(() => { });
                 const msg = await ctx.replyWithPhoto(cachedCodeSearchFileId || new InputFile(CODE_SEARCH_IMAGE_PATH), { caption, ...options });
                 if (!cachedCodeSearchFileId && msg.photo?.length > 0) {
                     cachedCodeSearchFileId = msg.photo[msg.photo.length - 1].file_id;
@@ -170,7 +171,7 @@ export async function searchByCode(ctx) {
             }
         } catch (error) {
             console.error("[Search] searchByCode edit error:", error.message);
-            await ctx.deleteMessage().catch(() => {});
+            await ctx.deleteMessage().catch(() => { });
         }
     } else {
         const msg = await ctx.replyWithPhoto(cachedCodeSearchFileId || new InputFile(CODE_SEARCH_IMAGE_PATH), {
@@ -210,7 +211,7 @@ export async function executeSearchByCode(ctx) {
                 await ctx.api.editMessageText(ctx.chat.id, waitMsg.message_id, notFoundMessage, {
                     parse_mode: "HTML",
                     reply_markup: KeyboardFactory.createBacktoHomeMenu(),
-                }).catch(() => {});
+                }).catch(() => { });
                 return;
             }
 
@@ -219,6 +220,9 @@ export async function executeSearchByCode(ctx) {
                 caption: getEpisodeCaption(episode),
                 parse_mode: "HTML",
             };
+            if (ctx.message?.message_id) {
+                options.reply_parameters = { message_id: ctx.message.message_id };
+            }
 
             if (isNumericMessageId) {
                 await ctx.api.copyMessage(ctx.chat.id, CONFIG.CHANNEL_ID, Number(episode.videoFileId), options);
@@ -235,7 +239,7 @@ export async function executeSearchByCode(ctx) {
                 }
             }
 
-            await ctx.api.deleteMessage(ctx.chat.id, waitMsg.message_id).catch(() => {});
+            await ctx.api.deleteMessage(ctx.chat.id, waitMsg.message_id).catch(() => { });
         } else {
             const film = await ApiService.getFilmByCode(code);
 
@@ -243,7 +247,7 @@ export async function executeSearchByCode(ctx) {
                 await ctx.api.editMessageText(ctx.chat.id, waitMsg.message_id, notFoundMessage, {
                     parse_mode: "HTML",
                     reply_markup: KeyboardFactory.createBacktoHomeMenu(),
-                }).catch(() => {});
+                }).catch(() => { });
                 return;
             }
 
@@ -260,6 +264,9 @@ export async function executeSearchByCode(ctx) {
                 parse_mode: "HTML",
                 reply_markup: EpisodesKeyboard.getEpisodesKeyboard(film.episodes, ctx, code),
             };
+            if (ctx.message?.message_id) {
+                options.reply_parameters = { message_id: ctx.message.message_id };
+            }
 
             try {
                 if (isNumericPosterId) {
@@ -272,7 +279,7 @@ export async function executeSearchByCode(ctx) {
                 await handleUnknownCommand(ctx);
             }
 
-            await ctx.api.deleteMessage(ctx.chat.id, waitMsg.message_id).catch(() => {});
+            await ctx.api.deleteMessage(ctx.chat.id, waitMsg.message_id).catch(() => { });
         }
     } catch (error) {
         console.error("[Search] Code search error:", error.message);
@@ -283,7 +290,7 @@ export async function executeSearchByCode(ctx) {
             {
                 reply_markup: KeyboardFactory.createBacktoHomeMenu(),
             }
-        ).catch(() => {});
+        ).catch(() => { });
     }
 }
 
@@ -296,7 +303,7 @@ export async function cancelSearchHandler(ctx) {
 
     canceledSearches.add(ctx.callbackQuery.message.message_id);
 
-    await ctx.answerCallbackQuery("Qidiruv bekor qilindi ❌").catch(() => {});
+    await ctx.answerCallbackQuery("Qidiruv bekor qilindi ❌").catch(() => { });
 
     try {
         if (ctx.callbackQuery.message?.text) {

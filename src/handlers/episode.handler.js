@@ -77,10 +77,10 @@ export async function handleEpisodeInfo(ctx) {
 
         const options = {
             caption: getEpisodeCaption(episode) +
-                `\n<blockquote><b>📃 Qisqacha Tafsif:</b>\n<i>${episode.description}</i></blockquote>`,
+                `\n\n<blockquote><b>📃 Qisqacha Tafsif:</b>\n<i>${episode.description}</i></blockquote>`,
             parse_mode: "HTML",
             reply_markup: new InlineKeyboard()
-                .text("🔙 Yopish", "close_episode_message"),
+                .text("🔙 Yopish", "close_episode_message").style("primary"),
         };
 
         await ctx.editMessageCaption(options);
