@@ -1,0 +1,102 @@
+import { handleChatJoinRequest } from "../handlers/chatJoinRequest.handler.js";
+import { handleChatMember } from "../handlers/chatMember.handler.js";
+import { handleStart } from "../handlers/start.handler.js";
+import { handleHelp } from "../handlers/help.handler.js";
+import { searchByName, searchByCode, cancelSearchHandler } from "../handlers/search.handler.js";
+import { textRouter } from "../handlers/text.router.js";
+import { handlePageChange } from "../handlers/page.handler.js";
+import { handleSendFilm, handleFilmInfo, handleCloseMessage } from "../handlers/film.handler.js";
+import { handleEpisodeInfo, handleSendEpisode, handleCloseEpisodeMessage } from "../handlers/episode.handler.js";
+import { handleEpisodePageChange } from "../handlers/episodePage.handler.js";
+import { handleFilms, handleAllFilmsPageChange } from "../handlers/filmlist.handler.js";
+import { handleUnknownCommand } from "../handlers/unknownCommand.handler.js";
+import { handleAdminCancel, handleAdminContact, handleAdminLoginStart, handleVerifyAdmin, handleAdminTelegramLogin } from "../handlers/admin.handler.js";
+import { ApiService } from "../services/api.service.js";
+
+
+export function setupRoutes(bot) {
+    bot.command("start", async (ctx) => {
+
+        const startPayload = ctx.match;
+        if (startPayload && startPayload.startsWith("verify_")) {
+            return await handleVerifyAdmin(ctx);
+        }
+        if (startPayload === "login") {
+            return await handleAdminLoginStart(ctx);
+        }
+        if (startPayload && startPayload.startsWith("admin_login_")) {
+            return await handleAdminTelegramLogin(ctx);
+        }
+        await handleStart(ctx);
+    });
+    bot.command("help", handleHelp);
+    bot.command("films", handleFilms);
+    bot.command("search", searchByName);
+    bot.command("code", searchByCode);
+
+    bot.callbackQuery("check_subscription", handleStart);
+    bot.callbackQuery("btn_help", handleHelp);
+    bot.callbackQuery("back_to_home", handleStart);
+    bot.callbackQuery("btn_all_films", handleFilms);
+    bot.callbackQuery("btn_search_name", searchByName);
+    bot.callbackQuery("btn_search_code", searchByCode);
+    bot.callbackQuery("cancel_search", cancelSearchHandler);
+    bot.callbackQuery("close_message", handleCloseMessage);
+    bot.callbackQuery("close_episode_message", handleCloseEpisodeMessage);
+
+    bot.callbackQuery(/^films_page_(\d+)$/, handlePageChange);
+    bot.callbackQuery(/^send_film_(.+)$/, handleSendFilm);
+    bot.callbackQuery(/^film_info_(.+)$/, handleFilmInfo);
+    bot.callbackQuery(/^send_episode_(.+)$/, handleSendEpisode);
+    bot.callbackQuery(/^all_films_page_(\d+)$/, handleAllFilmsPageChange);
+    bot.callbackQuery(/^episode_info_(.+)$/, handleEpisodeInfo);
+    bot.callbackQuery(/^episodes_page_(.+)_(\d+)$/, handleEpisodePageChange);
+
+    bot.callbackQuery(/^(no_prev_page|no_next_page|current_page_status)$/, (ctx) => {
+        ctx.answerCallbackQuery().catch(() => { });
+    });
+
+    bot.on("chat_join_request", handleChatJoinRequest);
+    bot.on("chat_member", handleChatMember);
+    bot.on("message:contact", handleAdminContact);
+
+    bot.on("message:text", async (ctx) => {
+        const text = ctx.message.text;
+
+        if (text.startsWith("/")) {
+            return await handleUnknownCommand(ctx);
+        }
+
+        if (ctx.session.step === "awaiting_admin_contact") {
+            if (text === "❌ Bekor qilish") {
+                return await handleAdminCancel(ctx);
+            }
+
+            await ctx.reply(
+                "📱 Iltimos, yuqoridagi tugma orqali telefon raqamingizni yuboring.",
+                {
+                    reply_parameters: { message_id: ctx.message.message_id },
+                }
+            );
+            return;
+        }
+
+        await textRouter(ctx);
+    });
+
+    bot.catch((err) => {
+        console.error("[Bot] Global error:", err.message || err);
+    });
+}
+
+export async function sendTokenToBackend(token, username) {
+    try {
+        const response = await ApiService.saveToken(token, username)
+
+        if (response && response.success) {
+            console.log("[Bot] Token backend bazasiga muvaffaqiyatli saqlandi. ✅");
+        }
+    } catch (error) {
+        console.error("[Bot] Backend'ga token yuborishda xatolik:", error.message);
+    }
+}
