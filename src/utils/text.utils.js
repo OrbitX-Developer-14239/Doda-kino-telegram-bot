@@ -11,7 +11,9 @@ export function getFilmCaption(film) {
 
 export function getEpisodeCaption(episode) {
     return `<b>${episode.name}</b>\n\n` +
-        `<blockquote><b>📅 Chiqarilgan:</b> ${episode.releaseYear}\n` +
+        `<blockquote>📕 Qism: ${episode.episodeNumber}\n` +
+        `<b>📅 Chiqarilgan:</b> ${episode.releaseYear}\n` +
+        `<b>🚩 Mamlakat:</b> ${episode.country}\n` +
         `<b>🆔 Qism Kodi:</b> ${episode.code}\n` +
         `<b>🎞 Janrlar:</b> <i>${episode.genres ? episode.genres.join(", ") : "Mavjud emas"}</i></blockquote>`;
 }
