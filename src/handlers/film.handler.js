@@ -30,6 +30,10 @@ export async function handleSendFilm(ctx) {
             reply_markup: EpisodesKeyboard.getEpisodesKeyboard(episodes, ctx, filmCode),
         };
 
+        if (ctx.callbackQuery?.message?.message_id) {
+            options.reply_parameters = { message_id: ctx.callbackQuery.message.message_id };
+        }
+
         try {
             if (isNumericMessageId) {
                 await ctx.api.copyMessage(ctx.chat.id, CONFIG.CHANNEL_ID, Number(film.posterId), options);

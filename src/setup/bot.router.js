@@ -34,7 +34,37 @@ export function setupRoutes(bot) {
     bot.command("search", searchByName);
     bot.command("code", searchByCode);
 
-    bot.callbackQuery("check_subscription", handleStart);
+    bot.callbackQuery("check_subscription", async (ctx) => {
+        if (ctx.session.pending_text) {
+            const pendingText = ctx.session.pending_text;
+            ctx.session.pending_text = null;
+
+            await ctx.answerCallbackQuery("Obuna tasdiqlandi ✅");
+            await ctx.deleteMessage().catch(() => { });
+
+            const originalMessageId = ctx.callbackQuery.message?.reply_to_message?.message_id || ctx.callbackQuery.message?.message_id;
+
+            ctx.update.message = {
+                text: pendingText,
+                message_id: originalMessageId,
+                from: ctx.from,
+                chat: ctx.chat,
+            };
+            delete ctx.update.callback_query;
+
+            if (pendingText === "/start") return await handleStart(ctx);
+            if (pendingText === "/help") return await handleHelp(ctx);
+            if (pendingText === "/films") return await handleFilms(ctx);
+            if (pendingText === "/search") return await searchByName(ctx);
+            if (pendingText === "/code") return await searchByCode(ctx);
+
+            if (!pendingText.startsWith("/")) {
+                return await textRouter(ctx);
+            }
+            return await handleUnknownCommand(ctx);
+        }
+        await handleStart(ctx);
+    });
     bot.callbackQuery("btn_help", handleHelp);
     bot.callbackQuery("back_to_home", handleStart);
     bot.callbackQuery("btn_all_films", handleFilms);

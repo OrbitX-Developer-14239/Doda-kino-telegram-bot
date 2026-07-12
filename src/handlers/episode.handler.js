@@ -34,6 +34,10 @@ export async function handleSendEpisode(ctx) {
                 .text("📃 Malumotlar", `episode_info_${episode.code}`),
         };
 
+        if (ctx.callbackQuery?.message?.message_id) {
+            options.reply_parameters = { message_id: ctx.callbackQuery.message.message_id };
+        }
+
         const isNumericVideoId = /^\d+$/.test(String(episode.videoFileId));
         if (isNumericVideoId) {
             await ctx.api.copyMessage(ctx.chat.id, CONFIG.CHANNEL_ID, Number(episode.videoFileId), options);

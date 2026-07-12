@@ -55,7 +55,7 @@ export const ApiService = {
             if (data) {
                 await cache.set(cacheKey, data, CONFIG.CACHE_TTL.FILM_BY_CODE);
             }
-            
+
             return data;
         } catch (error) {
             console.error("[API] getFilmByCode error:", error.message);
@@ -70,8 +70,7 @@ export const ApiService = {
 
         try {
             const response = await apiClient.post("/film/search", { query });
-            console.log(response);
-            
+
             const data = response.data?.data || [];
             if (data.length > 0) {
                 await cache.set(cacheKey, data, CONFIG.CACHE_TTL.SEARCH_RESULTS);

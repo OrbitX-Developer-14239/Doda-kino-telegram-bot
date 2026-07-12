@@ -123,6 +123,9 @@ export async function subscriptionMiddleware(ctx, next) {
         } else {
             if (ctx.message) {
                 options.reply_parameters = { message_id: ctx.message.message_id };
+                if (ctx.message.text) {
+                    ctx.session.pending_text = ctx.message.text;
+                }
             }
             const msg = await sendPhotoWarning();
             subscriptionMessageIds.set(userId, msg.message_id);

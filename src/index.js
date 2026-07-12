@@ -1,4 +1,5 @@
 import { Bot } from "grammy";
+import { limit } from "@grammyjs/ratelimiter";
 import { hydrate } from "@grammyjs/hydrate";
 import { run } from "@grammyjs/runner";
 import { CONFIG } from "./config/index.js";
@@ -13,6 +14,27 @@ import { sendTokenToBackend, setupRoutes } from "./setup/bot.router.js";
 await cache.connect();
 
 const bot = new Bot(CONFIG.BOT_TOKEN);
+bot.use(
+  limit({
+    timeFrame: 1000,
+    limit: 1,
+    onLimitExceeded: async (ctx) => {
+      try {
+        if (ctx.callbackQuery) {
+          await ctx.answerCallbackQuery({
+            text: "Sabr qilishni o'rganing! ⏳\n\nIltimos, tugmalarni ketma-ket tez-tez bosmang.",
+            show_alert: true,
+          });
+        } else {
+          await ctx.reply("Iltimos, juda tez xabar yubormang! ⏳");
+        }
+      } catch (err) {
+        console.error("Ratelimit xabari yuborilmadi:", err);
+      }
+    },
+    keyGenerator: (ctx) => ctx.from?.id.toString(),
+  })
+);
 bot.use(hydrate());
 bot.use(sessionMiddleware);
 bot.use(subscriptionMiddleware);
