@@ -1,3 +1,5 @@
+import http from "http";
+import https from "https";
 import axios from "axios";
 import { CONFIG } from "../config/index.js";
 import { cache } from "./cache.service.js";
@@ -5,6 +7,8 @@ import { cache } from "./cache.service.js";
 const apiClient = axios.create({
     baseURL: CONFIG.API_URL + "/api",
     timeout: 20000,
+    httpAgent: new http.Agent({ keepAlive: true }),
+    httpsAgent: new https.Agent({ keepAlive: true }),
 });
 
 export const ApiService = {
@@ -105,7 +109,7 @@ export const ApiService = {
             const response = await apiClient.post("/bot/save", { token, username });
             return response.data;
         } catch (error) {
-            console.error("[API] saveToken error:", error.message);
+            console.error("[API] saveToken error:", error);
             return null;
         }
     },

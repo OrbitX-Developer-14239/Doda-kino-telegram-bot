@@ -13,8 +13,6 @@ export async function handleChatMember(ctx) {
         pendingJoinRequests.delete(`${chatId}_${userId}`);
     }
 
-    if (!SUBSCRIBED_STATUSES.includes(status)) return;
-
     const msgId = subscriptionMessageIds.get(userId);
     if (!msgId) return;
 
