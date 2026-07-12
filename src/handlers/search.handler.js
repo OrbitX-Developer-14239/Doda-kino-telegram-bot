@@ -1,4 +1,4 @@
-import { InputFile } from "grammy";
+import { InputFile, InlineKeyboard } from "grammy";
 import { FilmsKeyboard } from "../keyboards/films.keyboard.js";
 import { KeyboardFactory } from "../keyboards/inline.menus.js";
 import { EpisodesKeyboard } from "../keyboards/episodes.keyboard.js";
@@ -219,6 +219,7 @@ export async function executeSearchByCode(ctx) {
             const options = {
                 caption: getEpisodeCaption(episode),
                 parse_mode: "HTML",
+                reply_markup: new InlineKeyboard().text("📃 Malumotlar", `episode_info_${episode.code}`).style("primary"),
             };
             if (ctx.message?.message_id) {
                 options.reply_parameters = { message_id: ctx.message.message_id };
