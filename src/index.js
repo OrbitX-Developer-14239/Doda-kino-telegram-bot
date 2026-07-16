@@ -25,7 +25,7 @@ bot.use(
             show_alert: true,
           });
         } else {
-          await ctx.reply("Iltimos, juda tez xabar yubormang! ⏳");
+          await ctx.reply("<blockquote><b>Iltimos, juda tez xabar yubormang! ⏳</b></blockquote>", { parse_mode: "HTML" });
         }
       } catch (err) {
         console.error("Ratelimit xabari yuborilmadi:", err);
@@ -64,13 +64,11 @@ if (process.env.NODE_ENV === "production") {
     });
 }
 
-// Portni tinglash (Har ikkala muhitda ham Express porti yoniq turadi)
 const PORT = 5001; 
 const server = app.listen(PORT, () => {
     console.log(`[Bot] Server ${PORT}-portda ishga tushdi 🚀`);
 });
 
-// Xavfsiz o'chirish (Graceful Shutdown) mantiqlari
 const shutdown = async () => {
     console.log("[Bot] To'xtatilmoqda...");
     server.close();

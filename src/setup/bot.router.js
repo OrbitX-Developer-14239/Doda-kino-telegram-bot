@@ -74,6 +74,10 @@ export function setupRoutes(bot) {
     bot.callbackQuery("close_message", handleCloseMessage);
     bot.callbackQuery("close_episode_message", handleCloseEpisodeMessage);
 
+    bot.callbackQuery(/^already_subbed_/, (ctx) => {
+        ctx.answerCallbackQuery({ text: "✅ Siz bu kanalga allaqachon obuna bo'lgansiz!", show_alert: true }).catch(() => { });
+    });
+
     bot.callbackQuery(/^films_page_(\d+)$/, handlePageChange);
     bot.callbackQuery(/^send_film_(.+)$/, handleSendFilm);
     bot.callbackQuery(/^film_info_(.+)$/, handleFilmInfo);

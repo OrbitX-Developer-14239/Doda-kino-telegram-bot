@@ -11,24 +11,38 @@ const apiClient = axios.create({
     httpsAgent: new https.Agent({ keepAlive: true }),
 });
 
+let _channelsCache = null;
+let _channelsCacheTime = 0;
+const CHANNELS_MEM_TTL = 5 * 60 * 1000;
+
 export const ApiService = {
     async getRequiredChannels() {
+        if (_channelsCache && Date.now() - _channelsCacheTime < CHANNELS_MEM_TTL) {
+            return _channelsCache;
+        }
+
         const cacheKey = "channels_v2";
         const cached = await cache.get(cacheKey);
-        if (cached) return cached;
+        if (cached) {
+            _channelsCache = cached;
+            _channelsCacheTime = Date.now();
+            return cached;
+        }
 
         try {
             const response = await apiClient.get("/channel");
             const channelsArray = response.data?.data || [];
 
             if (channelsArray.length > 0) {
-                await cache.set(cacheKey, channelsArray, CONFIG.CACHE_TTL.CHANNELS);
+                _channelsCache = channelsArray;
+                _channelsCacheTime = Date.now();
+                await cache.set(cacheKey, channelsArray, 300);
             }
 
             return channelsArray;
         } catch (error) {
             console.error("[API] getRequiredChannels error:", error.message);
-            return [];
+            return _channelsCache || [];
         }
     },
 

@@ -6,11 +6,15 @@ export const KeyboardFactory = {
 
         channels.forEach((channel) => {
             const isSubbed = checkedStatus[channel.telegram_id] === true;
-            const title = isSubbed ? "Tasdiqlandi" : channel.name;
+            const title = isSubbed ? `${channel.name} tasdiqlandi` : `${channel.name} qo'shilish`;
             const statusIndicator = isSubbed ? "🟢" : "📢";
             const style = isSubbed ? "primary" : "";
 
-            keyboard.url(`${statusIndicator} ${title} `, channel.invite_link).style(style).row();
+            if (isSubbed) {
+                keyboard.text(`${statusIndicator} ${title} `, `already_subbed_${channel.telegram_id}`).style(style).row();
+            } else {
+                keyboard.url(`${statusIndicator} ${title} `, channel.invite_link).row();
+            }
         });
 
         keyboard.text("✅ Tekshirish", "check_subscription").style("success");

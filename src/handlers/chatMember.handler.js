@@ -2,15 +2,16 @@ import { ApiService } from "../services/api.service.js";
 import { SUBSCRIBED_STATUSES } from "../config/index.js";
 import { pendingJoinRequests, subscriptionMessageIds } from "../store/memory.store.js";
 import { KeyboardFactory } from "../keyboards/inline.menus.js";
+import { clearUserSubCache } from "../middlewares/subscription.middleware.js";
 
 export async function handleChatMember(ctx) {
     const status = ctx.chatMember.new_chat_member.status;
     const userId = ctx.from.id;
     const chatId = ctx.chat.id;
 
-    // Kanal holati yangilanganda pending holatdan olib tashlaymiz
     if (["member", "left", "kicked", "creator", "administrator"].includes(status)) {
         pendingJoinRequests.delete(`${chatId}_${userId}`);
+        clearUserSubCache(userId);
     }
 
     const msgId = subscriptionMessageIds.get(userId);
