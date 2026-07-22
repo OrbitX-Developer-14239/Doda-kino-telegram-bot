@@ -13,9 +13,15 @@ const apiClient = axios.create({
 
 let _channelsCache = null;
 let _channelsCacheTime = 0;
-const CHANNELS_MEM_TTL = 5 * 60 * 1000;
+const CHANNELS_MEM_TTL = 30 * 1000; // 30 soniya kesh (tezkor yangilanish uchun)
 
 export const ApiService = {
+    clearChannelsCache() {
+        _channelsCache = null;
+        _channelsCacheTime = 0;
+        cache.del("channels_v2").catch(() => {});
+    },
+
     async getRequiredChannels() {
         if (_channelsCache && Date.now() - _channelsCacheTime < CHANNELS_MEM_TTL) {
             return _channelsCache;
@@ -36,7 +42,7 @@ export const ApiService = {
             if (channelsArray.length > 0) {
                 _channelsCache = channelsArray;
                 _channelsCacheTime = Date.now();
-                await cache.set(cacheKey, channelsArray, 300);
+                await cache.set(cacheKey, channelsArray, 30);
             }
 
             return channelsArray;

@@ -1,6 +1,6 @@
 import { InlineKeyboard } from "grammy";
-import { CONFIG } from "../config/index.js";
 import { getEpisodeCaption } from "../utils/text.utils.js";
+import { parseTelegramMediaId } from "../utils/media.utils.js";
 
 export async function handleSendEpisode(ctx) {
     const episodeCode = Number(ctx.match[1])
@@ -38,15 +38,15 @@ export async function handleSendEpisode(ctx) {
             options.reply_parameters = { message_id: ctx.callbackQuery.message.message_id };
         }
 
-        const isNumericVideoId = /^\d+$/.test(String(episode.videoFileId));
-        if (isNumericVideoId) {
-            await ctx.api.copyMessage(ctx.chat.id, CONFIG.CHANNEL_ID, Number(episode.videoFileId), options);
-        } else {
+        const media = parseTelegramMediaId(episode.videoFileId);
+        if (media && media.isCopyable) {
+            await ctx.api.copyMessage(ctx.chat.id, media.channelId, media.msgId, options);
+        } else if (media && media.fileId) {
             try {
-                await ctx.api.sendVideo(ctx.chat.id, episode.videoFileId, options);
+                await ctx.api.sendVideo(ctx.chat.id, media.fileId, options);
             } catch (videoError) {
                 try {
-                    await ctx.api.sendDocument(ctx.chat.id, episode.videoFileId, options);
+                    await ctx.api.sendDocument(ctx.chat.id, media.fileId, options);
                 } catch (documentError) {
                     console.error("[Episode] Invalid videoFileId format in DB:", episode.videoFileId);
                     await ctx.answerCallbackQuery({ text: "❌ Fayl bazada noto'g'ri saqlangan!", show_alert: true });

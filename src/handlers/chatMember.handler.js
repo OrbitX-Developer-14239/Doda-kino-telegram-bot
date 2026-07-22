@@ -12,6 +12,30 @@ export async function handleChatMember(ctx) {
     if (["member", "left", "kicked", "creator", "administrator"].includes(status)) {
         pendingJoinRequests.delete(`${chatId}_${userId}`);
         clearUserSubCache(userId);
+
+        const isMember = ["member", "creator", "administrator"].includes(status);
+
+        try {
+            const channels = await ApiService.getRequiredChannels();
+            const chatUsername = ctx.chat.username;
+
+            const matchedChannel = channels.find(ch => {
+                const tid = ch.telegram_id;
+                return tid === String(chatId)
+                    || tid === `@${chatUsername}`
+                    || tid === chatUsername;
+            });
+
+            if (matchedChannel) {
+                await ApiService.updateUser(userId, [{
+                    telegram_id: matchedChannel.telegram_id,
+                    is_member: isMember,
+                    name: matchedChannel.name
+                }]);
+            }
+        } catch (e) {
+            console.error("[ChatMember] Failed to push status to backend:", e.message);
+        }
     }
 
     const msgId = subscriptionMessageIds.get(userId);

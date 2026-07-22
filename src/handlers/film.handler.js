@@ -1,7 +1,7 @@
-import { CONFIG } from "../config/index.js";
 import { ApiService } from "../services/api.service.js";
 import { EpisodesKeyboard } from "../keyboards/episodes.keyboard.js";
 import { getFilmCaption } from "../utils/text.utils.js";
+import { parseTelegramMediaId } from "../utils/media.utils.js";
 import { handleUnknownCommand } from "./unknownCommand.handler.js";
 
 export async function handleSendFilm(ctx) {
@@ -23,7 +23,7 @@ export async function handleSendFilm(ctx) {
 
         const episodes = film.episodes || [];
 
-        const isNumericMessageId = /^\d+$/.test(String(film.posterId));
+        const media = parseTelegramMediaId(film.posterId);
         const options = {
             caption,
             parse_mode: "HTML",
@@ -35,10 +35,12 @@ export async function handleSendFilm(ctx) {
         }
 
         try {
-            if (isNumericMessageId) {
-                await ctx.api.copyMessage(ctx.chat.id, CONFIG.CHANNEL_ID, Number(film.posterId), options);
+            if (media && media.isCopyable) {
+                await ctx.api.copyMessage(ctx.chat.id, media.channelId, media.msgId, options);
+            } else if (media && media.fileId) {
+                await ctx.api.sendPhoto(ctx.chat.id, media.fileId, options);
             } else {
-                await ctx.api.sendPhoto(ctx.chat.id, film.posterId, options);
+                await handleUnknownCommand(ctx);
             }
         } catch (mediaError) {
             console.error("[Film] Media jo'natishda xatolik:", mediaError.message);

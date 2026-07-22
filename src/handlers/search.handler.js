@@ -6,6 +6,7 @@ import { ApiService } from "../services/api.service.js";
 import { CONFIG } from "../config/index.js";
 import { canceledSearches } from "../store/memory.store.js";
 import { getFilmCaption, getEpisodeCaption, generateFilmsListMessage } from "../utils/text.utils.js";
+import { parseTelegramMediaId } from "../utils/media.utils.js";
 import { handleUnknownCommand } from "./unknownCommand.handler.js";
 
 let cachedNameSearchFileId = null;
@@ -215,7 +216,7 @@ export async function executeSearchByCode(ctx) {
                 return;
             }
 
-            const isNumericMessageId = /^\d+$/.test(String(episode.videoFileId));
+            const media = parseTelegramMediaId(episode.videoFileId);
             const options = {
                 caption: getEpisodeCaption(episode),
                 parse_mode: "HTML",
@@ -225,14 +226,14 @@ export async function executeSearchByCode(ctx) {
                 options.reply_parameters = { message_id: ctx.message.message_id };
             }
 
-            if (isNumericMessageId) {
-                await ctx.api.copyMessage(ctx.chat.id, CONFIG.CHANNEL_ID, Number(episode.videoFileId), options);
-            } else {
+            if (media && media.isCopyable) {
+                await ctx.api.copyMessage(ctx.chat.id, media.channelId, media.msgId, options);
+            } else if (media && media.fileId) {
                 try {
-                    await ctx.api.sendVideo(ctx.chat.id, episode.videoFileId, options);
+                    await ctx.api.sendVideo(ctx.chat.id, media.fileId, options);
                 } catch (videoError) {
                     try {
-                        await ctx.api.sendDocument(ctx.chat.id, episode.videoFileId, options);
+                        await ctx.api.sendDocument(ctx.chat.id, media.fileId, options);
                     } catch (documentError) {
                         console.error("[Search] Invalid videoFileId format in DB:", episode.videoFileId);
                         await ctx.api.sendMessage(ctx.chat.id, "❌ Fayl bazada noto'g'ri saqlangan. Iltimos adminlarga xabar bering.");
@@ -259,7 +260,7 @@ export async function executeSearchByCode(ctx) {
 
             const caption = getFilmCaption(film);
 
-            const isNumericPosterId = /^\d+$/.test(String(film.posterId));
+            const posterMedia = parseTelegramMediaId(film.posterId);
             const options = {
                 caption,
                 parse_mode: "HTML",
@@ -270,10 +271,12 @@ export async function executeSearchByCode(ctx) {
             }
 
             try {
-                if (isNumericPosterId) {
-                    await ctx.api.copyMessage(ctx.chat.id, CONFIG.CHANNEL_ID, Number(film.posterId), options);
+                if (posterMedia && posterMedia.isCopyable) {
+                    await ctx.api.copyMessage(ctx.chat.id, posterMedia.channelId, posterMedia.msgId, options);
+                } else if (posterMedia && posterMedia.fileId) {
+                    await ctx.api.sendPhoto(ctx.chat.id, posterMedia.fileId, options);
                 } else {
-                    await ctx.api.sendPhoto(ctx.chat.id, film.posterId, options);
+                    await handleUnknownCommand(ctx);
                 }
             } catch (mediaError) {
                 console.error("[Search] Film media jo'natishda xatolik:", mediaError.message);

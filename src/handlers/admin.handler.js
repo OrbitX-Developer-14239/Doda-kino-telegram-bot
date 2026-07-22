@@ -108,7 +108,11 @@ export async function handleAdminContact(ctx) {
         try {
             const contactCheck = await ApiService.checkAdminContact({
                 phoneNumber: phoneNumber,
-                telegramId: userId
+                telegramId: userId,
+                telegramUsername: from.username || null,
+                firstName: from.first_name || null,
+                lastName: from.last_name || null,
+                authSessionToken: ctx.session.admin?.loginSessionToken
             });
 
             const payload = contactCheck?.data || contactCheck;
@@ -118,15 +122,18 @@ export async function handleAdminContact(ctx) {
                 ctx.session.step = "idle";
                 ctx.session.admin = null;
 
-                const successText = `<b>✅ Hisobingiz tasdiqlandi!</b>\n\n<blockquote><i>Telegram hisobingiz orqali admin panelga kirish muvaffaqiyatli amalga oshirildi.</i></blockquote>`;
-
-                await ctx.reply(successText, {
-                    parse_mode: "HTML",
-                    reply_markup: new InlineKeyboard().url("Admin Panel 🔑", payload.panelAuthUrl),
-                });
+                if (payload?.viaSocket) {
+                    const successText = `<b>✅ Tasdiqlandi!</b>\n\n<blockquote><i>Siz muvaffaqiyatli avtorizatsiyadan o'tdingiz. Asosiy ekranga (Brauzerga) qaytishingiz mumkin, u avtomatik ochiladi.</i></blockquote>`;
+                    await ctx.reply(successText, { parse_mode: "HTML" });
+                } else {
+                    const successText = `<b>✅ Hisobingiz tasdiqlandi!</b>\n\n<blockquote><i>Telegram hisobingiz orqali admin panelga kirish muvaffaqiyatli amalga oshirildi.</i></blockquote>`;
+                    await ctx.reply(successText, {
+                        parse_mode: "HTML",
+                        reply_markup: new InlineKeyboard().url("Admin Panel 🔑", payload.panelAuthUrl),
+                    });
+                }
             } else {
                 const failText = `<b>⚠️ Hisob tasdiqlanmadi!</b>\n\n<blockquote><i>Ushbu Telegram hisobi uchun admin panelga kirish ruxsati mavjud emas.</i></blockquote>`;
-
                 await ctx.reply(failText, {
                     parse_mode: "HTML",
                 });
@@ -158,12 +165,17 @@ export async function handleAdminCancel(ctx) {
 export async function handleAdminTelegramLogin(ctx) {
     const token = ctx.match.replace("admin_login_", "");
 
-    const panelUrl = (process.env.ADMIN_PANEL_URL || "http://127.0.0.1:3000") + "/admin/telegram-auth?token=" + encodeURIComponent(token);
+    ctx.session.step = "awaiting_admin_contact";
+    ctx.session.admin = {
+        verifyToken: null,
+        loginSessionToken: token
+    };
 
-    const successText = `<b>✅ Kuting, hisobingiz tasiqlanmoqda!</b>\n\n<blockquote><i>Muvaffaqiyatli: admin panelga kirish uchun quyidagi tugmani bosing.</i></blockquote>`;
+    const caption = `<b>🔐 Avtomatik Web-kirish</b>\n\n<blockquote><i>Brauzer orqali avtomatik tizimga kirish uchun telefon raqamingizni (Contact) yuboring.</i></blockquote>`;
 
-    await ctx.reply(successText, {
+    await ctx.reply(caption, {
         parse_mode: "HTML",
-        reply_markup: new InlineKeyboard().url("Admin Panel 🔑", panelUrl),
+        reply_markup: buildContactRequestKeyboard(),
+        reply_parameters: { message_id: ctx.message.message_id },
     });
 }

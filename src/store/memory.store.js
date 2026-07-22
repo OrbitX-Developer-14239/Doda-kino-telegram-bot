@@ -68,7 +68,7 @@ export class TTLMap {
     }
 }
 
-export const pendingJoinRequests = new TTLSet(30 * 60 * 1000);
+export const pendingJoinRequests = new TTLSet(24 * 60 * 60 * 1000);
 
 export const subscriptionMessageIds = new TTLMap(10 * 60 * 1000);
 
