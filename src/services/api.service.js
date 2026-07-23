@@ -13,13 +13,13 @@ const apiClient = axios.create({
 
 let _channelsCache = null;
 let _channelsCacheTime = 0;
-const CHANNELS_MEM_TTL = 30 * 1000; // 30 soniya kesh (tezkor yangilanish uchun)
+const CHANNELS_MEM_TTL = 30 * 1000;
 
 export const ApiService = {
     clearChannelsCache() {
         _channelsCache = null;
         _channelsCacheTime = 0;
-        cache.del("channels_v2").catch(() => {});
+        cache.del("channels_v2").catch(() => { });
     },
 
     async getRequiredChannels() {
@@ -129,8 +129,8 @@ export const ApiService = {
             const response = await apiClient.post("/bot/save", { token, username });
             return response.data;
         } catch (error) {
-            console.error("[API] saveToken error:", error);
-            return null;
+            console.error("[API] saveToken error:", error.message);
+            throw error;
         }
     },
 

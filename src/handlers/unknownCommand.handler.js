@@ -7,17 +7,28 @@ const DEFAULT_IMAGE_PATH = "assets/images/error.png";
 async function replyWithCachedImage(ctx, caption, options) {
     const fullOptions = { caption, ...options };
 
-    if (cachedImageFileId) {
-        return ctx.replyWithPhoto(cachedImageFileId, fullOptions);
+    try {
+        if (cachedImageFileId) {
+            return await ctx.replyWithPhoto(cachedImageFileId, fullOptions);
+        }
+
+        const msg = await ctx.replyWithPhoto(new InputFile(DEFAULT_IMAGE_PATH), fullOptions);
+
+        if (msg.photo?.length > 0) {
+            cachedImageFileId = msg.photo[msg.photo.length - 1].file_id;
+        }
+
+        return msg;
+    } catch (err) {
+        if (err.message?.includes("message to be replied not found") && fullOptions.reply_parameters) {
+            delete fullOptions.reply_parameters;
+            if (cachedImageFileId) {
+                return await ctx.replyWithPhoto(cachedImageFileId, fullOptions).catch(() => { });
+            }
+            return await ctx.replyWithPhoto(new InputFile(DEFAULT_IMAGE_PATH), fullOptions).catch(() => { });
+        }
+        throw err;
     }
-
-    const msg = await ctx.replyWithPhoto(new InputFile(DEFAULT_IMAGE_PATH), fullOptions);
-
-    if (msg.photo?.length > 0) {
-        cachedImageFileId = msg.photo[msg.photo.length - 1].file_id;
-    }
-
-    return msg;
 }
 
 export async function handleUnknownCommand(ctx) {
