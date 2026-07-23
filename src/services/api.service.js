@@ -52,6 +52,9 @@ export const ApiService = {
             return channelsArray;
         } catch (error) {
             console.error("[API] fetch channels error:", error.message);
+            // Xatolik bo'lsa ham kesh vaqtini yangilaymiz (flooding oldini olish uchun, 15 soniyadan keyin yana urinadi)
+            _channelsCacheTime = Date.now() - CHANNELS_MEM_TTL + 15000;
+            
             // Keshdan urinib ko'ramiz
             const cached = await cache.get(cacheKey);
             if (cached) {
