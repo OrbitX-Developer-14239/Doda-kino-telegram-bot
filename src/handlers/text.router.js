@@ -15,7 +15,10 @@ export async function textRouter(ctx) {
             "<blockquote>Masalan: <b>50001</b>, <b>12345</b></blockquote>",
             {
                 parse_mode: "HTML",
-                reply_parameters: { message_id: ctx.message.message_id },
+                reply_parameters: { 
+                    message_id: ctx.message.message_id,
+                    allow_sending_without_reply: true 
+                },
             }
         );
         return;

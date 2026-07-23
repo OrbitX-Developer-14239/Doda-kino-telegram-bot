@@ -45,7 +45,10 @@ export async function handleStart(ctx) {
         try {
             if (ctx.callbackQuery.message.text) {
                 if (ctx.callbackQuery.message.reply_to_message) {
-                    options.reply_parameters = { message_id: ctx.callbackQuery.message.reply_to_message.message_id };
+                    options.reply_parameters = { 
+                        message_id: ctx.callbackQuery.message.reply_to_message.message_id, 
+                        allow_sending_without_reply: true 
+                    };
                 }
                 await ctx.deleteMessage().catch(() => { });
                 return replyWithCachedGif(ctx, text, options);
@@ -74,7 +77,10 @@ export async function handleStart(ctx) {
     }
 
     if (ctx.message) {
-        options.reply_parameters = { message_id: ctx.message.message_id };
+        options.reply_parameters = { 
+            message_id: ctx.message.message_id,
+            allow_sending_without_reply: true 
+        };
     }
 
     return replyWithCachedGif(ctx, text, options);
