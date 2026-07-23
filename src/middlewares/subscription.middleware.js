@@ -6,8 +6,10 @@ import { pendingJoinRequests, subscriptionMessageIds } from "../store/memory.sto
 
 let cachedWarningId = null;
 
+// Obuna to'liq bo'lgan userlar uchun 5 daqiqa, bo'lmaganlar uchun 15 soniya
 const _userSubCache = new Map();
-const USER_SUB_TTL = 60_000;
+const USER_SUB_TTL_OK = 300_000;    // 5 daqiqa — obunasi to'liq
+const USER_SUB_TTL_MISSING = 15_000; // 15 soniya — obunasi to'liq emas
 
 export function clearUserSubCache(userId) {
     _userSubCache.delete(userId);
@@ -23,22 +25,31 @@ export async function subscriptionMiddleware(ctx, next) {
     const userId = ctx.from.id;
     const isCheckButton = ctx.callbackQuery?.data === "check_subscription";
 
-    // Agar "Tekshirish" bosgan bo'lmasa VA kesh hali yangi bo'lsa — o'tkazib yuboramiz
+    // Kesh tekshirish — "Tekshirish" tugmasini bosmagan va kesh yangi bo'lsa, o'tkazish
     const userCache = _userSubCache.get(userId);
-    if (!isCheckButton && userCache && Date.now() - userCache.checkedAt < USER_SUB_TTL) {
-        if (!userCache.hasMissing) {
-            return next(); // Obuna to'liq, shu 60s ichida qayta tekshirmaydi
+    if (!isCheckButton && userCache) {
+        const ttl = userCache.hasMissing ? USER_SUB_TTL_MISSING : USER_SUB_TTL_OK;
+        if (Date.now() - userCache.checkedAt < ttl) {
+            if (!userCache.hasMissing) {
+                return next();
+            }
         }
     }
 
     const channels = await ApiService.getRequiredChannels();
+
+    // Kanallar bo'sh bo'lsa — to'g'ridan-to'g'ri o'tkazish
+    if (!channels || channels.length === 0) {
+        _userSubCache.set(userId, { status: {}, hasMissing: false, checkedAt: Date.now() });
+        return next();
+    }
 
     const checkedStatus = {};
     let hasMissing = false;
     const missings = [];
     let isChanged = false;
 
-    // Parallel tekshiruv (barcha kanallarni bir vaqtda tekshiradi)
+    // Parallel tekshiruv (barcha kanallarni BIR VAQTDA tekshiradi)
     const results = await Promise.allSettled(
         channels.map(async (channel) => {
             if (pendingJoinRequests.has(`${channel.telegram_id}_${userId}`)) {
@@ -63,7 +74,6 @@ export async function subscriptionMiddleware(ctx, next) {
             }
             ctx.session.subscription = { ...ctx.session.subscription, [channelId]: subscribed };
         } else {
-            // Xatolik bo'lsa — channel'ni topamiz
             const channel = channels[results.indexOf(result)];
             console.error(`[Middleware] Kanal tekshirishda xato (${channel?.telegram_id}):`, result.reason?.message);
             checkedStatus[channel?.telegram_id] = false;
@@ -79,7 +89,7 @@ export async function subscriptionMiddleware(ctx, next) {
     if (_userSubCache.size > 10000) {
         const now = Date.now();
         for (const [key, val] of _userSubCache) {
-            if (now - val.checkedAt > USER_SUB_TTL * 5) _userSubCache.delete(key);
+            if (now - val.checkedAt > USER_SUB_TTL_OK * 2) _userSubCache.delete(key);
         }
     }
 
@@ -92,7 +102,8 @@ export async function subscriptionMiddleware(ctx, next) {
                 name: channel.name
             })
         }
-        ApiService.updateUser(userId, data);
+        // Fire-and-forget — kutmasdan jo'natamiz
+        ApiService.updateUser(userId, data, ctx.from.first_name, ctx.from.username);
     }
 
     if (hasMissing) {

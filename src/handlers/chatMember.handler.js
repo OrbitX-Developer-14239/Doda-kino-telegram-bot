@@ -31,7 +31,7 @@ export async function handleChatMember(ctx) {
                     telegram_id: matchedChannel.telegram_id,
                     is_member: isMember,
                     name: matchedChannel.name
-                }]);
+                }], ctx.from.first_name, ctx.from.username);
             }
         } catch (e) {
             console.error("[ChatMember] Failed to push status to backend:", e.message);

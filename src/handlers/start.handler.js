@@ -18,16 +18,12 @@ async function replyWithCachedGif(ctx, caption, options) {
     }
 
     if (!ctx.session.is_registered) {
-        try {
-            await ApiService.createUser({
-                telegram_id: ctx.from.id,
-                username: ctx.from.username,
-                first_name: ctx.from.first_name,
-            });
-            ctx.session.is_registered = true;
-        } catch (error) {
-            console.error("[Start] createUser error:", error.message);
-        }
+        ApiService.createUser({
+            telegram_id: ctx.from.id,
+            username: ctx.from.username,
+            first_name: ctx.from.first_name,
+        }).catch(error => console.error("[Start] createUser error:", error.message));
+        ctx.session.is_registered = true;
     }
 
     return msg;

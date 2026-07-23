@@ -8,15 +8,31 @@ import { sessionMiddleware } from "./core/context.js";
 import { subscriptionMiddleware } from "./middlewares/subscription.middleware.js";
 import { setupBotProfile } from "./setup/bot.profile.js";
 import { sendTokenToBackend, setupRoutes } from "./setup/bot.router.js";
+import { ApiService } from "./services/api.service.js";
 
 await cache.connect();
 
 const bot = new Bot(CONFIG.BOT_TOKEN);
 
+// Guruh va kanallardagi xabar/tugmalarga javob bermaslik
+bot.use(async (ctx, next) => {
+  if (
+    ctx.update.message ||
+    ctx.update.callback_query ||
+    ctx.update.channel_post ||
+    ctx.update.edited_channel_post
+  ) {
+    if (ctx.chat?.type !== "private") {
+      return;
+    }
+  }
+  return next();
+});
+
 bot.use(
   limit({
     timeFrame: 1000,
-    limit: 1,
+    limit: 3,
     onLimitExceeded: async (ctx) => {
       try {
         if (ctx.callbackQuery) {
@@ -31,7 +47,7 @@ bot.use(
         console.error("Ratelimit xabari yuborilmadi:", err);
       }
     },
-    keyGenerator: (ctx) => ctx.from?.id.toString(),
+    keyGenerator: (ctx) => ctx.from?.id?.toString(),
   })
 );
 
@@ -44,9 +60,15 @@ setupRoutes(bot);
 const app = express();
 app.use(express.json());
 
-await setupBotProfile(bot);
-const me = await bot.api.getMe();
-await sendTokenToBackend(CONFIG.BOT_TOKEN, me.username);
+// Parallel startup: profile + getMe + channels prewarm
+const [, me] = await Promise.all([
+    setupBotProfile(bot),
+    bot.api.getMe(),
+    ApiService.getRequiredChannels().catch(() => {}),
+]);
+
+// Token saqlash — background
+sendTokenToBackend(CONFIG.BOT_TOKEN, me.username);
 
 if (process.env.NODE_ENV === "production") {
     app.use("/webhook", webhookCallback(bot, "express"));

@@ -15,12 +15,14 @@ import { CONFIG } from "../config/index.js";
 export function parseTelegramMediaId(mediaInput) {
     if (!mediaInput) return null;
 
-    // Handle JSON object format
+    // Handle JSON object format { channelId, msgId }
     if (typeof mediaInput === "object") {
         const rawChannel = mediaInput.channelId || mediaInput.chatId;
         const rawMsg = mediaInput.msgId || mediaInput.messageId;
+        
         if (rawChannel && rawMsg) {
             let channelId = String(rawChannel).trim();
+            // Ensure channelId starts with -100 for Telegram copyMessage
             if (!channelId.startsWith("-100") && !channelId.startsWith("-")) {
                 channelId = `-100${channelId}`;
             }
@@ -32,51 +34,24 @@ export function parseTelegramMediaId(mediaInput) {
         }
     }
 
-    const str = String(mediaInput).trim();
-
-    // Check for "channelId:4389929267 msgId:4" or "channelId: 4389929267, msgId: 4" pattern
-    const namedPatternMatch = str.match(/channelId:?\s*(-?\d+)\D+msgId:?\s*(\d+)/i);
-    if (namedPatternMatch) {
-        let channelId = namedPatternMatch[1];
-        const msgId = Number(namedPatternMatch[2]);
-        if (!channelId.startsWith("-100") && !channelId.startsWith("-")) {
-            channelId = `-100${channelId}`;
-        }
-        return { channelId, msgId, isCopyable: true };
-    }
-
-    // Check for simple colon separated format: "-1004389929267:4" or "4389929267:4"
-    if (str.includes(":")) {
-        const parts = str.split(":");
-        if (parts.length === 2) {
-            let channelId = parts[0].trim();
-            const msgIdStr = parts[1].trim();
-
-            if (channelId && /^\d+$/.test(msgIdStr)) {
-                if (!channelId.startsWith("-100") && !channelId.startsWith("-")) {
-                    channelId = `-100${channelId}`;
-                }
-                return {
-                    channelId,
-                    msgId: Number(msgIdStr),
-                    isCopyable: true
-                };
+    // If it's a string, maybe it's a direct fileId (e.g. from old data) or JSON string
+    if (typeof mediaInput === "string") {
+        try {
+            const parsed = JSON.parse(mediaInput);
+            if (parsed && typeof parsed === "object") {
+                return parseTelegramMediaId(parsed);
             }
+        } catch (e) {
+            // Not JSON, assume it's a fallback fileId
         }
-    }
 
-    // Check for legacy numeric message ID e.g. "4"
-    if (/^\d+$/.test(str)) {
+        const str = mediaInput.trim();
+        // Fallback: Telegram file_id (e.g. "AgACAgIA...")
         return {
-            channelId: CONFIG.CHANNEL_ID,
-            msgId: Number(str),
-            isCopyable: true
+            fileId: str,
+            isCopyable: false
         };
     }
 
-    // Fallback: Telegram file_id (e.g. "AgACAgIA...")
-    return {
-        fileId: str,
-        isCopyable: false
-    };
+    return null;
 }

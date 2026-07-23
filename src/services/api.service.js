@@ -27,19 +27,23 @@ export const ApiService = {
             return _channelsCache;
         }
 
-        const cacheKey = "channels_v2";
-        const cached = await cache.get(cacheKey);
-        if (cached) {
-            _channelsCache = cached;
-            _channelsCacheTime = Date.now();
-            return cached;
+        // Kesh eski bo'lsa ham tezlik uchun uni qaytaramiz va orqa fonda yangilaymiz (stale-while-revalidate)
+        if (_channelsCache) {
+            this._fetchAndCacheChannels().catch(() => {});
+            return _channelsCache;
         }
 
+        // Kesh umuman bo'lmasa, kutib olamiz (faqat birinchi zapuskda)
+        return await this._fetchAndCacheChannels();
+    },
+
+    async _fetchAndCacheChannels() {
+        const cacheKey = "channels_v2";
         try {
             const response = await apiClient.get("/channel");
             const channelsArray = response.data?.data || [];
 
-            if (channelsArray.length > 0) {
+            if (channelsArray.length >= 0) {
                 _channelsCache = channelsArray;
                 _channelsCacheTime = Date.now();
                 await cache.set(cacheKey, channelsArray, 30);
@@ -47,7 +51,13 @@ export const ApiService = {
 
             return channelsArray;
         } catch (error) {
-            console.error("[API] getRequiredChannels error:", error.message);
+            console.error("[API] fetch channels error:", error.message);
+            // Keshdan urinib ko'ramiz
+            const cached = await cache.get(cacheKey);
+            if (cached) {
+                _channelsCache = cached;
+                return cached;
+            }
             return _channelsCache || [];
         }
     },
@@ -144,9 +154,9 @@ export const ApiService = {
         }
     },
 
-    async updateUser(telegram_id, channels_condition) {
+    async updateUser(telegram_id, channels_condition, first_name, username) {
         try {
-            const response = await apiClient.put("/user", { telegram_id, channels_condition });
+            const response = await apiClient.put("/user", { telegram_id, channels_condition, first_name, username });
             return response.data;
         } catch (error) {
             console.error("[API] updateUser error:", error.message);
