@@ -29,12 +29,31 @@ export const ApiService = {
 
         // Kesh eski bo'lsa ham tezlik uchun uni qaytaramiz va orqa fonda yangilaymiz (stale-while-revalidate)
         if (_channelsCache) {
-            this._fetchAndCacheChannels().catch(() => {});
+            this._fetchAndCacheChannels().catch(() => { });
             return _channelsCache;
         }
 
         // Kesh umuman bo'lmasa, kutib olamiz (faqat birinchi zapuskda)
-        return await this._fetchAndCacheChannels();
+        // return await this._fetchAndCacheChannels();
+        return [
+            {
+                _id: "6a4bcdd31ee089d40bf06bbb",
+                telegram_id: "-1003831284898",
+                name: "1-kanal",
+                invite_link: "https://t.me/+nvS-w92jxN45YzBi",
+                is_active: true,
+                join_type: "public"
+            },
+            {
+
+                id: "6a4b6d250e00db55d1c2df6f",
+                telegram_id: "-1004375039133",
+                name: "2-kanal",
+                invite_link: "https://t.me/+qYFpw5UxQFA5OTQy",
+                is_active: true,
+                join_type: "public",
+            }
+        ]
     },
 
     async _fetchAndCacheChannels() {
@@ -54,7 +73,7 @@ export const ApiService = {
             console.error("[API] fetch channels error:", error.message);
             // Xatolik bo'lsa ham kesh vaqtini yangilaymiz (flooding oldini olish uchun, 15 soniyadan keyin yana urinadi)
             _channelsCacheTime = Date.now() - CHANNELS_MEM_TTL + 15000;
-            
+
             // Keshdan urinib ko'ramiz
             const cached = await cache.get(cacheKey);
             if (cached) {
