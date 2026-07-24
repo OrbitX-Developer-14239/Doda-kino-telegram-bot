@@ -26,6 +26,7 @@ bot.use(async (ctx, next) => {
       return;
     }
   }
+
   return next();
 });
 

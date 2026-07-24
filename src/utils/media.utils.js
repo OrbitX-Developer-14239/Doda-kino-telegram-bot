@@ -55,3 +55,48 @@ export function parseTelegramMediaId(mediaInput) {
 
     return null;
 }
+
+import { cache } from "../services/cache.service.js";
+const fileIdCache = new Map();
+
+export async function getOrExtractFileId(ctx, channelId, msgId) {
+    const key = `fileid:${channelId}_${msgId}`;
+    
+    // 1. Check Memory Cache
+    if (fileIdCache.has(key)) return fileIdCache.get(key);
+
+    // 2. Check Redis Cache
+    if (cache.isReady && cache.client) {
+        try {
+            const cached = await cache.client.get(key);
+            if (cached) {
+                fileIdCache.set(key, cached);
+                return cached;
+            }
+        } catch(e) {}
+    }
+
+    // 3. Extract via DUMP_CHANNEL
+    if (CONFIG.DUMP_CHANNEL) {
+        try {
+            const fwMsg = await ctx.api.forwardMessage(CONFIG.DUMP_CHANNEL, channelId, msgId, { disable_notification: true });
+            let fileId = null;
+            if (fwMsg.video) fileId = fwMsg.video.file_id;
+            else if (fwMsg.document) fileId = fwMsg.document.file_id;
+            
+            await ctx.api.deleteMessage(CONFIG.DUMP_CHANNEL, fwMsg.message_id).catch(() => {});
+
+            if (fileId) {
+                fileIdCache.set(key, fileId);
+                if (cache.isReady && cache.client) {
+                    await cache.client.set(key, fileId, { EX: 30 * 24 * 60 * 60 }); // Cache for 30 days
+                }
+                return fileId;
+            }
+        } catch (err) {
+            console.error("[media.utils] Failed to extract fileId via DUMP_CHANNEL:", err.message);
+        }
+    }
+    
+    return null;
+}

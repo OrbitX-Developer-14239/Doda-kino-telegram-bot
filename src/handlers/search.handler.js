@@ -6,8 +6,9 @@ import { ApiService } from "../services/api.service.js";
 import { CONFIG } from "../config/index.js";
 import { canceledSearches } from "../store/memory.store.js";
 import { getFilmCaption, getEpisodeCaption, generateFilmsListMessage } from "../utils/text.utils.js";
-import { parseTelegramMediaId } from "../utils/media.utils.js";
+import { parseTelegramMediaId, getOrExtractFileId } from "../utils/media.utils.js";
 import { handleUnknownCommand } from "./unknownCommand.handler.js";
+import { HistoryService } from "../services/history.service.js";
 
 let cachedNameSearchFileId = null;
 let cachedCodeSearchFileId = null;
@@ -226,19 +227,34 @@ export async function executeSearchByCode(ctx) {
                 options.reply_parameters = { message_id: ctx.message.message_id };
             }
 
+            let sentMsg = null;
+            let actualFileId = media?.fileId || null;
+
             if (media && media.isCopyable) {
-                await ctx.api.copyMessage(ctx.chat.id, media.channelId, media.msgId, options);
-            } else if (media && media.fileId) {
+                actualFileId = await getOrExtractFileId(ctx, media.channelId, media.msgId);
+            }
+
+            if (actualFileId) {
                 try {
-                    await ctx.api.sendVideo(ctx.chat.id, media.fileId, options);
+                    sentMsg = await ctx.api.sendVideo(ctx.chat.id, actualFileId, options);
                 } catch (videoError) {
                     try {
-                        await ctx.api.sendDocument(ctx.chat.id, media.fileId, options);
+                        sentMsg = await ctx.api.sendDocument(ctx.chat.id, actualFileId, options);
                     } catch (documentError) {
                         console.error("[Search] Invalid videoFileId format in DB:", episode.videoFileId);
                         await ctx.api.sendMessage(ctx.chat.id, "❌ Fayl bazada noto'g'ri saqlangan. Iltimos adminlarga xabar bering.");
                     }
                 }
+            } else if (media && media.isCopyable) {
+                sentMsg = await ctx.api.copyMessage(ctx.chat.id, media.channelId, media.msgId, options);
+            }
+            
+            if (sentMsg && sentMsg.message_id) {
+                HistoryService.addMovieMessage(ctx.chat.id, sentMsg.message_id, {
+                    code: episode.code,
+                    videoFileId: actualFileId || episode.videoFileId,
+                    caption: getEpisodeCaption(episode)
+                });
             }
 
             await ctx.api.deleteMessage(ctx.chat.id, waitMsg.message_id).catch(() => { });

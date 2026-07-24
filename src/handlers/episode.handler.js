@@ -1,6 +1,8 @@
 import { InlineKeyboard } from "grammy";
 import { getEpisodeCaption } from "../utils/text.utils.js";
-import { parseTelegramMediaId } from "../utils/media.utils.js";
+import { parseTelegramMediaId, getOrExtractFileId } from "../utils/media.utils.js";
+import { HistoryService } from "../services/history.service.js";
+import { CONFIG } from "../config/index.js";
 
 export async function handleSendEpisode(ctx) {
     const episodeCode = Number(ctx.match[1])
@@ -39,19 +41,35 @@ export async function handleSendEpisode(ctx) {
         }
 
         const media = parseTelegramMediaId(episode.videoFileId);
+        let sentMsg = null;
+        let actualFileId = media?.fileId || null;
+
         if (media && media.isCopyable) {
-            await ctx.api.copyMessage(ctx.chat.id, media.channelId, media.msgId, options);
-        } else if (media && media.fileId) {
+            actualFileId = await getOrExtractFileId(ctx, media.channelId, media.msgId);
+        }
+
+        if (actualFileId) {
             try {
-                await ctx.api.sendVideo(ctx.chat.id, media.fileId, options);
+                sentMsg = await ctx.api.sendVideo(ctx.chat.id, actualFileId, options);
             } catch (videoError) {
                 try {
-                    await ctx.api.sendDocument(ctx.chat.id, media.fileId, options);
+                    sentMsg = await ctx.api.sendDocument(ctx.chat.id, actualFileId, options);
                 } catch (documentError) {
                     console.error("[Episode] Invalid videoFileId format in DB:", episode.videoFileId);
                     await ctx.answerCallbackQuery({ text: "❌ Fayl bazada noto'g'ri saqlangan!", show_alert: true });
                 }
             }
+        } else if (media && media.isCopyable) {
+            // Fallback to copyMessage if extraction failed or DUMP_CHANNEL not set
+            sentMsg = await ctx.api.copyMessage(ctx.chat.id, media.channelId, media.msgId, options);
+        }
+        
+        if (sentMsg && sentMsg.message_id) {
+             HistoryService.addMovieMessage(ctx.chat.id, sentMsg.message_id, {
+                 code: episode.code,
+                 videoFileId: actualFileId || episode.videoFileId,
+                 caption: getEpisodeCaption(episode)
+             });
         }
 
         await ctx.answerCallbackQuery();

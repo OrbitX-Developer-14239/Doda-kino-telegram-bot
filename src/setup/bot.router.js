@@ -12,6 +12,7 @@ import { handleFilms, handleAllFilmsPageChange } from "../handlers/filmlist.hand
 import { handleUnknownCommand } from "../handlers/unknownCommand.handler.js";
 import { handleAdminCancel, handleAdminContact, handleAdminLoginStart, handleVerifyAdmin, handleAdminTelegramLogin } from "../handlers/admin.handler.js";
 import { ApiService } from "../services/api.service.js";
+import { HistoryService } from "../services/history.service.js";
 
 
 export function setupRoutes(bot) {
@@ -35,12 +36,15 @@ export function setupRoutes(bot) {
     bot.command("code", searchByCode);
 
     bot.callbackQuery("check_subscription", async (ctx) => {
+        await ctx.answerCallbackQuery("Obuna tasdiqlandi ✅").catch(() => {});
+        await ctx.deleteMessage().catch(() => {});
+
+        // Qulflangan filmlarni qayta ochish
+        HistoryService.unlockUserMedia(ctx, ctx.from.id).catch(e => console.error(e));
+
         if (ctx.session.pending_text) {
             const pendingText = ctx.session.pending_text;
             ctx.session.pending_text = null;
-
-            await ctx.answerCallbackQuery("Obuna tasdiqlandi ✅");
-            await ctx.deleteMessage().catch(() => { });
 
             const originalMessageId = ctx.callbackQuery.message?.reply_to_message?.message_id || ctx.callbackQuery.message?.message_id;
 
@@ -63,7 +67,6 @@ export function setupRoutes(bot) {
             }
             return await handleUnknownCommand(ctx);
         }
-        await handleStart(ctx);
     });
     bot.callbackQuery("btn_help", handleHelp);
     bot.callbackQuery("back_to_home", handleStart);

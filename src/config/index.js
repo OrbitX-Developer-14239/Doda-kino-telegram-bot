@@ -4,6 +4,7 @@ export const CONFIG = {
     BOT_TOKEN: process.env.BOT_TOKEN,
     API_URL: process.env.API_URL,
     CHANNEL_ID: process.env.CHANNEL_ID,
+    DUMP_CHANNEL: process.env.DUMP_CHANNEL,
     ITEMS_PER_PAGE: 12,
     REDIS_URL: process.env.REDIS_URL || "redis://127.0.0.1:6379",
 
