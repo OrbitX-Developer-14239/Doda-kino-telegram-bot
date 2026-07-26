@@ -1,4 +1,4 @@
-import { InputFile } from "grammy";
+import { InputFile, InlineKeyboard } from "grammy";
 import { cache } from "./cache.service.js";
 import { parseTelegramMediaId } from "../utils/media.utils.js";
 import { getEpisodeCaption } from "../utils/text.utils.js";
@@ -98,7 +98,8 @@ export const HistoryService = {
                         media: lockMedia,
                         caption: caption,
                         parse_mode: "HTML"
-                    }
+                    },
+                    { reply_markup: new InlineKeyboard() }
                 );
                 console.log(`[HistoryService] Locked messageId ${item.messageId}`);
                 
@@ -169,7 +170,8 @@ export const HistoryService = {
                         media: media.fileId,
                         caption: item.caption || "",
                         parse_mode: "HTML"
-                    }
+                    },
+                    { reply_markup: new InlineKeyboard().text("📃 Malumotlar", `episode_info_${item.code}`).style("primary") }
                 );
                 console.log(`[HistoryService] Unlocked messageId ${item.messageId} as video`);
             } catch (err) {
@@ -185,7 +187,8 @@ export const HistoryService = {
                                 media: media.fileId,
                                 caption: item.caption || "",
                                 parse_mode: "HTML"
-                            }
+                            },
+                            { reply_markup: new InlineKeyboard().text("📃 Malumotlar", `episode_info_${item.code}`).style("primary") }
                         );
                         console.log(`[HistoryService] Unlocked messageId ${item.messageId} as document`);
                     } catch (docErr) {

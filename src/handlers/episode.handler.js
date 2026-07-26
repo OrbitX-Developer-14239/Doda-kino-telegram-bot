@@ -33,7 +33,7 @@ export async function handleSendEpisode(ctx) {
             caption: getEpisodeCaption(episode),
             parse_mode: "HTML",
             reply_markup: new InlineKeyboard()
-                .text("📃 Malumotlar", `episode_info_${episode.code}`),
+                .text("📃 Malumotlar", `episode_info_${episode.code}`).style("primary"),
         };
 
         if (ctx.callbackQuery?.message?.message_id) {
@@ -128,7 +128,7 @@ export async function handleCloseEpisodeMessage(ctx) {
             caption: getEpisodeCaption(episode),
             parse_mode: "HTML",
             reply_markup: new InlineKeyboard()
-                .text("📃 Malumotlar", `episode_info_${episode.code}`),
+                .text("📃 Malumotlar", `episode_info_${episode.code}`).style("primary"),
         };
 
         await ctx.editMessageCaption(options);
