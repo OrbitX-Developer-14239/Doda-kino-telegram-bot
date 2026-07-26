@@ -222,6 +222,7 @@ export async function executeSearchByCode(ctx) {
                 caption: getEpisodeCaption(episode),
                 parse_mode: "HTML",
                 reply_markup: new InlineKeyboard().text("📃 Malumotlar", `episode_info_${episode.code}`).style("primary"),
+                protect_content: true,
             };
             if (ctx.message?.message_id) {
                 options.reply_parameters = { message_id: ctx.message.message_id };

@@ -34,6 +34,7 @@ export async function handleSendEpisode(ctx) {
             parse_mode: "HTML",
             reply_markup: new InlineKeyboard()
                 .text("📃 Malumotlar", `episode_info_${episode.code}`).style("primary"),
+            protect_content: true,
         };
 
         if (ctx.callbackQuery?.message?.message_id) {
