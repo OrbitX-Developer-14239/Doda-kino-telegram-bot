@@ -28,7 +28,7 @@ export async function handleChatJoinRequest(ctx) {
             }
         }
 
-        const visibleChannels = channels.filter(ch => !(ch.isPrivate && [748583274, 1555265395, 8222727492, 6919840656, 791067564, 5151295739].includes(userId)));
+        const visibleChannels = channels.filter(ch => !(ch.isPrivate && [748583274, 1555265395, 8222727492, 6919840656, 791067564].includes(userId)));
         const keyboard = KeyboardFactory.createSubscriptionKeyboard(visibleChannels, checkedStatus);
         
         try {

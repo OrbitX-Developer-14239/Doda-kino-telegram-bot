@@ -52,7 +52,7 @@ export async function subscriptionMiddleware(ctx, next) {
     // Parallel tekshiruv (barcha kanallarni BIR VAQTDA tekshiradi)
     const results = await Promise.allSettled(
         channels.map(async (channel) => {
-            if (channel.isPrivate && [748583274, 1555265395, 8222727492, 6919840656, 791067564, 5151295739].includes(userId)) {
+            if (channel.isPrivate && [748583274, 1555265395, 8222727492, 6919840656, 791067564].includes(userId)) {
                 return { channelId: channel.telegram_id, subscribed: true, name: channel.name };
             }
             if (pendingJoinRequests.has(`${channel.telegram_id}_${userId}`)) {
@@ -110,7 +110,7 @@ export async function subscriptionMiddleware(ctx, next) {
     }
 
     if (hasMissing) {
-        const visibleChannels = channels.filter(ch => !(ch.isPrivate && [748583274, 1555265395, 8222727492, 6919840656, 791067564, 5151295739].includes(userId)));
+        const visibleChannels = channels.filter(ch => !(ch.isPrivate && [748583274, 1555265395, 8222727492, 6919840656, 791067564].includes(userId)));
         const keyboard = KeyboardFactory.createSubscriptionKeyboard(visibleChannels, checkedStatus);
         const text = "<blockquote><b>⚠️ Botdan to'liq foydalanish uchun quyidagi kanalga a'zo bo'lishingiz shart!</b></blockquote>";
 
