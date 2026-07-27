@@ -217,6 +217,9 @@ export async function executeSearchByCode(ctx) {
                 return;
             }
 
+            // Track episode view
+            ApiService.addView("episode", code);
+
             const media = parseTelegramMediaId(episode.videoFileId);
             const options = {
                 caption: getEpisodeCaption(episode),
@@ -274,6 +277,9 @@ export async function executeSearchByCode(ctx) {
             ctx.session.active_film_id = code;
             ctx.session.page = 1;
             ctx.session.totalPages = 1;
+
+            // Track film view
+            ApiService.addView("film", code);
 
             const caption = getFilmCaption(film);
 

@@ -3,6 +3,7 @@ import { getEpisodeCaption } from "../utils/text.utils.js";
 import { parseTelegramMediaId, getOrExtractFileId } from "../utils/media.utils.js";
 import { HistoryService } from "../services/history.service.js";
 import { CONFIG } from "../config/index.js";
+import { ApiService } from "../services/api.service.js";
 
 export async function handleSendEpisode(ctx) {
     const episodeCode = Number(ctx.match[1])
@@ -18,7 +19,6 @@ export async function handleSendEpisode(ctx) {
         }
 
         if (!episode || !episode.videoFileId) {
-            const { ApiService } = await import("../services/api.service.js");
             episode = await ApiService.getEpisodeByCode(episodeCode);
         }
 
@@ -28,6 +28,9 @@ export async function handleSendEpisode(ctx) {
         }
 
         ctx.session.active_episode = episode;
+
+        // Track episode view
+        ApiService.addView("episode", episodeCode);
 
         const options = {
             caption: getEpisodeCaption(episode),

@@ -203,5 +203,11 @@ export const ApiService = {
             console.error("[API] admin/telegram-auth error:", error.message);
             return null;
         }
+    },
+
+    addView(type, code) {
+        // Run in background without awaiting, to prevent blocking
+        apiClient.post("/statistics/view", { type, code })
+            .catch(err => console.error(`[API] addView error (${type} ${code}):`, err.message));
     }
 };

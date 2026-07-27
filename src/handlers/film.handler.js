@@ -21,6 +21,9 @@ export async function handleSendFilm(ctx) {
         ctx.session.active_film = film;
         const caption = getFilmCaption(film);
 
+        // Orqa fonda (background) ko'rishlar sonini oshiramiz
+        ApiService.addView("film", filmCode);
+
         const episodes = film.episodes || [];
 
         const media = parseTelegramMediaId(film.posterId);
