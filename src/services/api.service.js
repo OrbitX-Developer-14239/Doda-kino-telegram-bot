@@ -195,6 +195,18 @@ export const ApiService = {
         }
     },
 
+    async cancelAdminContact(authSessionToken) {
+        try {
+            await apiClient.post("/admin/telegram-login/cancel", { authSessionToken }, {
+                headers: {
+                    "x-bot-token": CONFIG.BOT_TOKEN
+                }
+            });
+        } catch (error) {
+            // Ignore error
+        }
+    },
+
     async authenticateAdminByTelegramToken(token) {
         try {
             const response = await apiClient.post("/admin/telegram-auth", { token });

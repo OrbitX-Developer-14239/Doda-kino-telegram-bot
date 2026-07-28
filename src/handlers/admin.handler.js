@@ -122,11 +122,11 @@ export async function handleAdminContact(ctx) {
                 ctx.session.step = "idle";
                 ctx.session.admin = null;
 
+                const successText = `<b>✅ Hisobingiz tasdiqlandi!</b>\n\n<blockquote><i>Telegram hisobingiz orqali admin panelga kirish muvaffaqiyatli amalga oshirildi.</i></blockquote>`;
+
                 if (payload?.viaSocket) {
-                    const successText = `<b>✅ Tasdiqlandi!</b>\n\n<blockquote><i>Siz muvaffaqiyatli avtorizatsiyadan o'tdingiz. Asosiy ekranga (Brauzerga) qaytishingiz mumkin, u avtomatik ochiladi.</i></blockquote>`;
-                    await ctx.reply(successText, { parse_mode: "HTML" });
+                    await ctx.reply(successText, { parse_mode: "HTML", reply_markup: { remove_keyboard: true } });
                 } else {
-                    const successText = `<b>✅ Hisobingiz tasdiqlandi!</b>\n\n<blockquote><i>Telegram hisobingiz orqali admin panelga kirish muvaffaqiyatli amalga oshirildi.</i></blockquote>`;
                     await ctx.reply(successText, {
                         parse_mode: "HTML",
                         reply_markup: new InlineKeyboard().url("Admin Panel 🔑", payload.panelAuthUrl),
@@ -136,9 +136,16 @@ export async function handleAdminContact(ctx) {
                 const failText = `<b>⚠️ Hisob tasdiqlanmadi!</b>\n\n<blockquote><i>Ushbu Telegram hisobi uchun admin panelga kirish ruxsati mavjud emas.</i></blockquote>`;
                 await ctx.reply(failText, {
                     parse_mode: "HTML",
+                    reply_markup: { remove_keyboard: true }
                 });
+                
+                const authSessionToken = ctx.session.admin?.loginSessionToken;
                 ctx.session.step = "idle";
                 ctx.session.admin = null;
+
+                if (authSessionToken) {
+                    ApiService.cancelAdminContact(authSessionToken).catch(() => {});
+                }
             }
         } catch (error) {
             console.error("[Bot] Login tekshirishda xatolik:", error.message);
@@ -150,8 +157,13 @@ export async function handleAdminContact(ctx) {
 }
 
 export async function handleAdminCancel(ctx) {
+    const authSessionToken = ctx.session.admin?.loginSessionToken;
     ctx.session.step = "idle";
     ctx.session.admin = null;
+
+    if (authSessionToken) {
+        ApiService.cancelAdminContact(authSessionToken).catch(() => {});
+    }
 
     const cancelText = `<b>❌ Kirish bekor qilindi</b>\n\n<blockquote><i>Admin panelga Telegram hisob orqali kirish bekor qilindi.</i></blockquote>`;
 
