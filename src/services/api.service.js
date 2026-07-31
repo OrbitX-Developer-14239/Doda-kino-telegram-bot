@@ -27,13 +27,11 @@ export const ApiService = {
             return _channelsCache;
         }
 
-        // Kesh eski bo'lsa ham tezlik uchun uni qaytaramiz va orqa fonda yangilaymiz (stale-while-revalidate)
         if (_channelsCache) {
             this._fetchAndCacheChannels().catch(() => { });
             return _channelsCache;
         }
 
-        // Kesh umuman bo'lmasa, kutib olamiz (faqat birinchi zapuskda)
         return await this._fetchAndCacheChannels();
     },
 
@@ -52,10 +50,8 @@ export const ApiService = {
             return channelsArray;
         } catch (error) {
             console.error("[API] fetch channels error:", error.message);
-            // Xatolik bo'lsa ham kesh vaqtini yangilaymiz (flooding oldini olish uchun, 15 soniyadan keyin yana urinadi)
             _channelsCacheTime = Date.now() - CHANNELS_MEM_TTL + 15000;
 
-            // Keshdan urinib ko'ramiz
             const cached = await cache.get(cacheKey);
             if (cached) {
                 _channelsCache = cached;
@@ -195,6 +191,20 @@ export const ApiService = {
         }
     },
 
+    async linkAdminContact(contactData) {
+        try {
+            const response = await apiClient.post("/admin/telegram-link", contactData, {
+                headers: {
+                    "x-bot-token": CONFIG.BOT_TOKEN
+                }
+            });
+            return response.data;
+        } catch (error) {
+            console.error("[API] admin/telegram-link error:", error.message);
+            return null;
+        }
+    },
+
     async cancelAdminContact(authSessionToken) {
         try {
             await apiClient.post("/admin/telegram-login/cancel", { authSessionToken }, {
@@ -218,7 +228,6 @@ export const ApiService = {
     },
 
     addView(type, code) {
-        // Run in background without awaiting, to prevent blocking
         apiClient.post("/statistics/view", { type, code })
             .catch(err => console.error(`[API] addView error (${type} ${code}):`, err.message));
     }

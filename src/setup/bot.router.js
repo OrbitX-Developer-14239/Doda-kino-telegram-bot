@@ -10,7 +10,7 @@ import { handleEpisodeInfo, handleSendEpisode, handleCloseEpisodeMessage } from 
 import { handleEpisodePageChange } from "../handlers/episodePage.handler.js";
 import { handleFilms, handleAllFilmsPageChange } from "../handlers/filmlist.handler.js";
 import { handleUnknownCommand } from "../handlers/unknownCommand.handler.js";
-import { handleAdminCancel, handleAdminContact, handleAdminLoginStart, handleVerifyAdmin, handleAdminTelegramLogin } from "../handlers/admin.handler.js";
+import { handleAdminCancel, handleAdminContact, handleAdminLoginStart, handleVerifyAdmin, handleAdminTelegramLogin, handleAdminTelegramLink } from "../handlers/admin.handler.js";
 import { ApiService } from "../services/api.service.js";
 import { HistoryService } from "../services/history.service.js";
 
@@ -28,6 +28,9 @@ export function setupRoutes(bot) {
         if (startPayload && startPayload.startsWith("admin_login_")) {
             return await handleAdminTelegramLogin(ctx);
         }
+        if (startPayload && startPayload.startsWith("admin_link_")) {
+            return await handleAdminTelegramLink(ctx);
+        }
         await handleStart(ctx);
     });
     bot.command("help", handleHelp);
@@ -36,10 +39,9 @@ export function setupRoutes(bot) {
     bot.command("code", searchByCode);
 
     bot.callbackQuery("check_subscription", async (ctx) => {
-        await ctx.answerCallbackQuery("Obuna tasdiqlandi ✅").catch(() => {});
-        await ctx.deleteMessage().catch(() => {});
+        await ctx.answerCallbackQuery("Obuna tasdiqlandi ✅").catch(() => { });
+        await ctx.deleteMessage().catch(() => { });
 
-        // Qulflangan filmlarni qayta ochish
         HistoryService.unlockUserMedia(ctx, ctx.from.id).catch(e => console.error(e));
 
         if (ctx.session.pending_text) {
@@ -111,6 +113,20 @@ export function setupRoutes(bot) {
 
             await ctx.reply(
                 "📱 Iltimos, yuqoridagi tugma orqali telefon raqamingizni yuboring.",
+                {
+                    reply_parameters: { message_id: ctx.message.message_id },
+                }
+            );
+            return;
+        }
+
+        if (ctx.session.step === "awaiting_link_contact") {
+            if (text === "❌ Bekor qilish") {
+                return await handleAdminCancel(ctx);
+            }
+
+            await ctx.reply(
+                "📱 Telegram hisobingizni ulash uchun yuqoridagi tugma orqali telefon raqamingizni yuboring.",
                 {
                     reply_parameters: { message_id: ctx.message.message_id },
                 }
