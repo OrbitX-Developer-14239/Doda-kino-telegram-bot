@@ -7,6 +7,9 @@ import { cache } from "./cache.service.js";
 const apiClient = axios.create({
     baseURL: CONFIG.API_URL + "/api",
     timeout: 20000,
+    // Backend endi barcha endpointlarni himoyalaydi, shuning uchun bot o'zini
+    // har so'rovda tanitadi. Ilgari bu header faqat admin oqimlarida yuborilardi.
+    headers: { "x-bot-token": CONFIG.BOT_TOKEN },
     httpAgent: new http.Agent({ keepAlive: true }),
     httpsAgent: new https.Agent({ keepAlive: true }),
 });
