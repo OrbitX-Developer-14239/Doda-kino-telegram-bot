@@ -19,7 +19,55 @@ let _channelsCache = null;
 let _channelsCacheTime = 0;
 const CHANNELS_MEM_TTL = 30 * 1000;
 
+// Bir xil so'rov parallel kelsa, backend'ga faqat bittasi boradi
+const _inflight = new Map();
+
 export const ApiService = {
+    /**
+     * Stale-while-revalidate kesh: muddati o'tgan bo'lsa ham keshdagi javob
+     * DARHOL qaytariladi, yangilanish esa fonda ketadi. Shu tufayli birinchi
+     * so'rov ham (Redis'da eski nusxa bo'lsa) sekundning ulushida javob oladi.
+     */
+    async _swrGet(cacheKey, ttlSeconds, fetcher) {
+        const cached = await cache.get(cacheKey);
+
+        if (cached && cached.__swr) {
+            const ageSeconds = (Date.now() - cached.t) / 1000;
+            if (ageSeconds > ttlSeconds) {
+                this._swrRefresh(cacheKey, ttlSeconds, fetcher); // fonda yangilash
+            }
+            return cached.d;
+        }
+
+        if (cached) return cached; // eski formatdagi kesh — muddati bilan o'zi o'chadi
+
+        return await this._swrRefresh(cacheKey, ttlSeconds, fetcher);
+    },
+
+    async _swrRefresh(cacheKey, ttlSeconds, fetcher) {
+        if (_inflight.has(cacheKey)) return _inflight.get(cacheKey);
+
+        const promise = (async () => {
+            try {
+                const data = await fetcher();
+                if (data !== null && data !== undefined) {
+                    // Redis'da TTL'dan ancha uzoq saqlaymiz — "stale" nusxa
+                    // restart'dan keyin ham birinchi so'rovni tez qiladi
+                    await cache.set(cacheKey, { __swr: true, t: Date.now(), d: data }, ttlSeconds * 10);
+                }
+                return data ?? null;
+            } catch (error) {
+                console.error(`[API] fetch error (${cacheKey}):`, error.message);
+                return null;
+            } finally {
+                _inflight.delete(cacheKey);
+            }
+        })();
+
+        _inflight.set(cacheKey, promise);
+        return promise;
+    },
+
     clearChannelsCache() {
         _channelsCache = null;
         _channelsCacheTime = 0;
@@ -64,38 +112,17 @@ export const ApiService = {
     },
 
     async getAllFilms(page = 1) {
-        const cacheKey = `films:all:page:${page}`;
-        const cached = await cache.get(cacheKey);
-        if (cached) return cached;
-
-        try {
+        return this._swrGet(`films:all:page:${page}`, CONFIG.CACHE_TTL.ALL_FILMS, async () => {
             const response = await apiClient.get(`/film?page=${page}`);
-            const data = response.data;
-            await cache.set(cacheKey, data, CONFIG.CACHE_TTL.ALL_FILMS);
-            return data;
-        } catch (error) {
-            console.error("[API] getAllFilms error:", error.message);
-            return null;
-        }
+            return response.data;
+        });
     },
 
     async getFilmByCode(code) {
-        const cacheKey = `film:code:${code}`;
-        const cached = await cache.get(cacheKey);
-        if (cached) return cached;
-
-        try {
+        return this._swrGet(`film:code:${code}`, CONFIG.CACHE_TTL.FILM_BY_CODE, async () => {
             const response = await apiClient.get(`/film/code/${code}`);
-            const data = response.data?.data;
-            if (data) {
-                await cache.set(cacheKey, data, CONFIG.CACHE_TTL.FILM_BY_CODE);
-            }
-
-            return data;
-        } catch (error) {
-            console.error("[API] getFilmByCode error:", error.message);
-            return null;
-        }
+            return response.data?.data;
+        });
     },
 
     async searchFilm(query) {
@@ -119,21 +146,10 @@ export const ApiService = {
     },
 
     async getEpisodeByCode(code) {
-        const cacheKey = `episode:code:${code}`;
-        const cached = await cache.get(cacheKey);
-        if (cached) return cached;
-
-        try {
+        return this._swrGet(`episode:code:${code}`, CONFIG.CACHE_TTL.EPISODE_BY_CODE, async () => {
             const response = await apiClient.get(`/episode/code/${code}`);
-            const data = response.data?.data;
-            if (data) {
-                await cache.set(cacheKey, data, CONFIG.CACHE_TTL.EPISODE_BY_CODE);
-            }
-            return data;
-        } catch (error) {
-            console.error("[API] getEpisodeByCode error:", error.message);
-            return null;
-        }
+            return response.data?.data;
+        });
     },
 
     async saveToken(token, username) {

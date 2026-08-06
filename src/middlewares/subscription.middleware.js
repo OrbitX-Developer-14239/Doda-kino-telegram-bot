@@ -3,12 +3,14 @@ import { KeyboardFactory } from "../keyboards/inline.menus.js";
 import { ApiService } from "../services/api.service.js";
 import { SUBSCRIBED_STATUSES, isPrivateBypassUser } from "../config/index.js";
 import { pendingJoinRequests, subscriptionMessageIds } from "../store/memory.store.js";
+import { FileIdService } from "../services/fileid.service.js";
 
-let cachedWarningId = null;
+const WARNING_IMAGE_KEY = "sub_warning_photo";
 
-// Obuna to'liq bo'lgan userlar uchun 5 daqiqa, bo'lmaganlar uchun 15 soniya
+// User kanaldan chiqsa chat_member event keladi va kesh DARHOL tozalanadi
+// (clearUserSubCache) — shuning uchun OK muddatini uzun qilish xavfsiz.
 const _userSubCache = new Map();
-const USER_SUB_TTL_OK = 300_000;    // 5 daqiqa — obunasi to'liq
+const USER_SUB_TTL_OK = 1_800_000;   // 30 daqiqa — obunasi to'liq
 const USER_SUB_TTL_MISSING = 15_000; // 15 soniya — obunasi to'liq emas
 
 export function clearUserSubCache(userId) {
@@ -38,13 +40,15 @@ async function showSubscriptionWarning(ctx, channels, checkedStatus, missings) {
         parse_mode: "HTML",
     };
 
+    const cachedWarningId = await FileIdService.get(WARNING_IMAGE_KEY);
+
     const sendPhotoWarning = async () => {
         if (cachedWarningId) {
             return await ctx.replyWithPhoto(cachedWarningId, options);
         }
         const msg = await ctx.replyWithPhoto(new InputFile("assets/images/icon2.png"), options);
         if (msg.photo?.[0]?.file_id) {
-            cachedWarningId = msg.photo[0].file_id;
+            FileIdService.set(WARNING_IMAGE_KEY, msg.photo[0].file_id);
         }
         return msg;
     };

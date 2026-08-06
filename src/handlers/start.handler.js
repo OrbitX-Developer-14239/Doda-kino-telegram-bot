@@ -1,12 +1,14 @@
 import { InputFile } from "grammy";
 import { KeyboardFactory } from "../keyboards/inline.menus.js";
 import { ApiService } from "../services/api.service.js";
+import { FileIdService } from "../services/fileid.service.js";
 
-let cachedGifFileId = null;
+const IMAGE_KEY = "start_photo";
 
 async function replyWithCachedGif(ctx, caption, options) {
     const fullOptions = { caption, ...options };
 
+    const cachedGifFileId = await FileIdService.get(IMAGE_KEY);
     if (cachedGifFileId) {
         return ctx.replyWithPhoto(cachedGifFileId, fullOptions);
     }
@@ -14,7 +16,7 @@ async function replyWithCachedGif(ctx, caption, options) {
     const msg = await ctx.replyWithPhoto(new InputFile("assets/images/start.png"), fullOptions);
 
     if (msg.photo?.[0]?.file_id) {
-        cachedGifFileId = msg.photo[0].file_id;
+        FileIdService.set(IMAGE_KEY, msg.photo[0].file_id);
     }
 
     if (!ctx.session.is_registered) {
@@ -53,6 +55,7 @@ export async function handleStart(ctx) {
                 await ctx.deleteMessage().catch(() => { });
                 return replyWithCachedGif(ctx, text, options);
             } else {
+                const cachedGifFileId = await FileIdService.get(IMAGE_KEY);
                 const msg = await ctx.editMessageMedia(
                     {
                         type: "photo",
@@ -64,7 +67,7 @@ export async function handleStart(ctx) {
                 );
 
                 if (!cachedGifFileId && msg !== true && msg?.photo?.[0]?.file_id) {
-                    cachedGifFileId = msg.photo[0].file_id;
+                    FileIdService.set(IMAGE_KEY, msg.photo[0].file_id);
                 }
             }
             return;

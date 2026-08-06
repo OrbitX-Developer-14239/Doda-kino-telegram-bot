@@ -3,12 +3,15 @@ import { KeyboardFactory } from "../keyboards/inline.menus.js";
 import { InputFile } from "grammy";
 import { FilmsKeyboard } from "../keyboards/films.keyboard.js";
 import { CONFIG } from "../config/index.js";
+import { FileIdService } from "../services/fileid.service.js";
 
-let cachedImageFileId = null;
+const IMAGE_KEY = "films_photo";
 const DEFAULT_IMAGE_PATH = "assets/images/films.png";
+
 async function replyWithCachedImage(ctx, caption, options) {
     const fullOptions = { caption, ...options };
 
+    const cachedImageFileId = await FileIdService.get(IMAGE_KEY);
     if (cachedImageFileId) {
         return ctx.replyWithPhoto(cachedImageFileId, fullOptions);
     }
@@ -16,7 +19,7 @@ async function replyWithCachedImage(ctx, caption, options) {
     const msg = await ctx.replyWithPhoto(new InputFile(DEFAULT_IMAGE_PATH), fullOptions);
 
     if (msg.photo?.length > 0) {
-        cachedImageFileId = msg.photo[msg.photo.length - 1].file_id;
+        FileIdService.set(IMAGE_KEY, msg.photo[msg.photo.length - 1].file_id);
     }
 
     return msg;
@@ -68,6 +71,7 @@ export async function handleFilms(ctx, page = 1) {
 
         if (ctx.callbackQuery) {
             try {
+                const cachedImageFileId = await FileIdService.get(IMAGE_KEY);
                 const updatedMsg = await ctx.editMessageMedia(
                     {
                         type: "photo",
@@ -79,7 +83,7 @@ export async function handleFilms(ctx, page = 1) {
                 );
 
                 if (!cachedImageFileId && updatedMsg.photo?.length > 0) {
-                    cachedImageFileId = updatedMsg.photo[updatedMsg.photo.length - 1].file_id;
+                    FileIdService.set(IMAGE_KEY, updatedMsg.photo[updatedMsg.photo.length - 1].file_id);
                 }
             } catch (editError) {
                 if (!editError.message.includes("message is not modified")) {

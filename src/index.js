@@ -79,11 +79,13 @@ setupRoutes(bot);
 const app = express();
 app.use(express.json());
 
-// Parallel startup: profile + getMe + channels prewarm
+// Parallel startup: profile + getMe + channels & films prewarm —
+// deploy'dan keyingi birinchi user ham keshdan tez javob oladi
 const [, me] = await Promise.all([
     setupBotProfile(bot),
     bot.api.getMe(),
     ApiService.getRequiredChannels().catch(() => {}),
+    ApiService.getAllFilms(1).catch(() => {}),
 ]);
 
 // Token saqlash — background

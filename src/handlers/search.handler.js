@@ -10,8 +10,10 @@ import { parseTelegramMediaId, getOrExtractFileId } from "../utils/media.utils.j
 import { handleUnknownCommand } from "./unknownCommand.handler.js";
 import { HistoryService } from "../services/history.service.js";
 
-let cachedNameSearchFileId = null;
-let cachedCodeSearchFileId = null;
+import { FileIdService } from "../services/fileid.service.js";
+
+const NAME_SEARCH_KEY = "name_search_photo";
+const CODE_SEARCH_KEY = "code_search_photo";
 
 const NAME_SEARCH_IMAGE_PATH = "assets/images/name-search.png";
 const CODE_SEARCH_IMAGE_PATH = "assets/images/code-search.png";
@@ -34,13 +36,15 @@ export async function searchByName(ctx) {
         reply_markup: KeyboardFactory.createBacktoHomeMenu(),
     };
 
+    const cachedNameSearchFileId = await FileIdService.get(NAME_SEARCH_KEY);
+
     if (ctx.callbackQuery) {
         try {
             if (ctx.callbackQuery.message?.text) {
                 await ctx.deleteMessage().catch(() => { });
                 const msg = await ctx.replyWithPhoto(cachedNameSearchFileId || new InputFile(NAME_SEARCH_IMAGE_PATH), { caption, ...options });
                 if (!cachedNameSearchFileId && msg.photo?.length > 0) {
-                    cachedNameSearchFileId = msg.photo[msg.photo.length - 1].file_id;
+                    FileIdService.set(NAME_SEARCH_KEY, msg.photo[msg.photo.length - 1].file_id);
                 }
             } else {
                 const updatedMsg = await ctx.editMessageMedia(
@@ -53,7 +57,7 @@ export async function searchByName(ctx) {
                     { reply_markup: options.reply_markup }
                 );
                 if (!cachedNameSearchFileId && updatedMsg.photo?.length > 0) {
-                    cachedNameSearchFileId = updatedMsg.photo[updatedMsg.photo.length - 1].file_id;
+                    FileIdService.set(NAME_SEARCH_KEY, updatedMsg.photo[updatedMsg.photo.length - 1].file_id);
                 }
             }
         } catch (error) {
@@ -67,7 +71,7 @@ export async function searchByName(ctx) {
             reply_parameters: ctx.message ? { message_id: ctx.message.message_id } : undefined,
         });
         if (!cachedNameSearchFileId && msg.photo?.length > 0) {
-            cachedNameSearchFileId = msg.photo[msg.photo.length - 1].file_id;
+            FileIdService.set(NAME_SEARCH_KEY, msg.photo[msg.photo.length - 1].file_id);
         }
     }
 }
@@ -109,6 +113,7 @@ export async function executeSearchByName(ctx) {
 
             await ctx.api.deleteMessage(ctx.chat.id, waitMsg.message_id).catch(() => { });
 
+            const cachedNameSearchFileId = await FileIdService.get(NAME_SEARCH_KEY);
             const msg = await ctx.replyWithPhoto(cachedNameSearchFileId || new InputFile(NAME_SEARCH_IMAGE_PATH), {
                 caption: successMessage,
                 parse_mode: "HTML",
@@ -116,7 +121,7 @@ export async function executeSearchByName(ctx) {
                 reply_parameters: ctx.message ? { message_id: ctx.message.message_id } : undefined,
             });
             if (!cachedNameSearchFileId && msg.photo?.length > 0) {
-                cachedNameSearchFileId = msg.photo[msg.photo.length - 1].file_id;
+                FileIdService.set(NAME_SEARCH_KEY, msg.photo[msg.photo.length - 1].file_id);
             }
         } else {
             await ctx.api.editMessageText(ctx.chat.id, waitMsg.message_id, notFoundMessage, {
@@ -149,13 +154,15 @@ export async function searchByCode(ctx) {
         reply_markup: KeyboardFactory.createBacktoHomeMenu(),
     };
 
+    const cachedCodeSearchFileId = await FileIdService.get(CODE_SEARCH_KEY);
+
     if (ctx.callbackQuery) {
         try {
             if (ctx.callbackQuery.message?.text) {
                 await ctx.deleteMessage().catch(() => { });
                 const msg = await ctx.replyWithPhoto(cachedCodeSearchFileId || new InputFile(CODE_SEARCH_IMAGE_PATH), { caption, ...options });
                 if (!cachedCodeSearchFileId && msg.photo?.length > 0) {
-                    cachedCodeSearchFileId = msg.photo[msg.photo.length - 1].file_id;
+                    FileIdService.set(CODE_SEARCH_KEY, msg.photo[msg.photo.length - 1].file_id);
                 }
             } else {
                 const updatedMsg = await ctx.editMessageMedia(
@@ -168,7 +175,7 @@ export async function searchByCode(ctx) {
                     { reply_markup: options.reply_markup }
                 );
                 if (!cachedCodeSearchFileId && updatedMsg.photo?.length > 0) {
-                    cachedCodeSearchFileId = updatedMsg.photo[updatedMsg.photo.length - 1].file_id;
+                    FileIdService.set(CODE_SEARCH_KEY, updatedMsg.photo[updatedMsg.photo.length - 1].file_id);
                 }
             }
         } catch (error) {
@@ -182,7 +189,7 @@ export async function searchByCode(ctx) {
             reply_parameters: ctx.message ? { message_id: ctx.message.message_id } : undefined,
         });
         if (!cachedCodeSearchFileId && msg.photo?.length > 0) {
-            cachedCodeSearchFileId = msg.photo[msg.photo.length - 1].file_id;
+            FileIdService.set(CODE_SEARCH_KEY, msg.photo[msg.photo.length - 1].file_id);
         }
     }
 }

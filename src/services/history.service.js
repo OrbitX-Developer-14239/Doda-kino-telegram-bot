@@ -1,12 +1,13 @@
 import { InputFile, InlineKeyboard } from "grammy";
 import { cache } from "./cache.service.js";
 import { parseTelegramMediaId } from "../utils/media.utils.js";
+import { FileIdService } from "./fileid.service.js";
 
 const HISTORY_TTL_SECONDS = 48 * 60 * 60; // 48 soat
 const MAX_HISTORY_MESSAGES = 50; // Faqat oxirgi 50 ta epizod
 
 const LOCKED_IMAGE_PATH = "assets/images/error.png";
-let cachedLockedImageId = null;
+const LOCKED_IMAGE_KEY = "locked_photo";
 
 // Redis ishlamay qolganda yoki local test uchun zaxira xotira (RAM)
 const memoryStore = new Map();
@@ -84,7 +85,7 @@ export const HistoryService = {
 
         const caption = `<b>🔒 KINO QULFLANDI</b>\n\n<blockquote>Siz majburiy kanallardan biridan chiqib ketganingiz sababli ushbu kino bloklandi.</blockquote>\n\n<i>Kinoni ko'rishda davom etish uchun pastdagi tugmalar orqali kanallarga qaytadan a'zo bo'ling!</i>`;
 
-        const lockMedia = cachedLockedImageId || new InputFile(LOCKED_IMAGE_PATH);
+        let cachedLockedImageId = await FileIdService.get(LOCKED_IMAGE_KEY);
 
         for (const item of items) {
             try {
@@ -93,7 +94,7 @@ export const HistoryService = {
                     item.messageId,
                     {
                         type: "photo",
-                        media: lockMedia,
+                        media: cachedLockedImageId || new InputFile(LOCKED_IMAGE_PATH),
                         caption: caption,
                         parse_mode: "HTML"
                     },
@@ -102,6 +103,7 @@ export const HistoryService = {
 
                 if (!cachedLockedImageId && msg.photo?.length > 0) {
                     cachedLockedImageId = msg.photo[msg.photo.length - 1].file_id;
+                    FileIdService.set(LOCKED_IMAGE_KEY, cachedLockedImageId);
                 }
             } catch (err) {
                 // 48 soatdan oshgan yoki o'chirilgan xabar — o'tkazib yuborish
