@@ -1,7 +1,7 @@
 import { InputFile } from "grammy";
 import { KeyboardFactory } from "../keyboards/inline.menus.js";
 import { ApiService } from "../services/api.service.js";
-import { SUBSCRIBED_STATUSES } from "../config/index.js";
+import { SUBSCRIBED_STATUSES, isPrivateBypassUser } from "../config/index.js";
 import { pendingJoinRequests, subscriptionMessageIds } from "../store/memory.store.js";
 
 let cachedWarningId = null;
@@ -15,6 +15,87 @@ export function clearUserSubCache(userId) {
     _userSubCache.delete(userId);
 }
 
+function computeMissingNames(channels, checkedStatus, userId) {
+    const missings = [];
+    for (const channel of channels) {
+        if (isPrivateBypassUser(channel, userId)) continue;
+        if (!checkedStatus[channel.telegram_id]) {
+            missings.push(channel.name);
+        }
+    }
+    return missings;
+}
+
+async function showSubscriptionWarning(ctx, channels, checkedStatus, missings) {
+    const userId = ctx.from.id;
+    const visibleChannels = channels.filter(ch => !isPrivateBypassUser(ch, userId));
+    const keyboard = KeyboardFactory.createSubscriptionKeyboard(visibleChannels, checkedStatus);
+    const text = "<blockquote><b>⚠️ Botdan to'liq foydalanish uchun quyidagi kanalga a'zo bo'lishingiz shart!</b></blockquote>";
+
+    const options = {
+        caption: text,
+        reply_markup: keyboard,
+        parse_mode: "HTML",
+    };
+
+    const sendPhotoWarning = async () => {
+        if (cachedWarningId) {
+            return await ctx.replyWithPhoto(cachedWarningId, options);
+        }
+        const msg = await ctx.replyWithPhoto(new InputFile("assets/images/icon2.png"), options);
+        if (msg.photo?.[0]?.file_id) {
+            cachedWarningId = msg.photo[0].file_id;
+        }
+        return msg;
+    };
+
+    if (ctx.callbackQuery) {
+        if (ctx.callbackQuery.data === "check_subscription") {
+            try {
+                if (ctx.callbackQuery.message.text) {
+                    await ctx.deleteMessage().catch(() => { });
+                    const msg = await sendPhotoWarning();
+                    subscriptionMessageIds.set(userId, msg.message_id);
+                } else {
+                    await ctx.editMessageMedia(
+                        {
+                            type: "photo",
+                            media: cachedWarningId || new InputFile("assets/images/icon2.png"),
+                            caption: text,
+                            parse_mode: options.parse_mode
+                        },
+                        { reply_markup: options.reply_markup }
+                    );
+                    subscriptionMessageIds.set(userId, ctx.callbackQuery.message.message_id);
+                }
+            } catch (error) {
+                if (!error.message.includes("message is not modified") && !error.message.includes("media in the message")) {
+                    console.error("[Middleware] Edit message error:", error.message);
+                }
+            }
+
+            await ctx.answerCallbackQuery({
+                text: `${missings.join(", ")} kanaliga qo'shilmadingiz`,
+                show_alert: true,
+            }).catch(() => { });
+        } else {
+            await ctx.answerCallbackQuery({ text: "⚠️ Avval kanalga a'zo bo'ling!", show_alert: true }).catch(() => { });
+            await ctx.deleteMessage().catch(() => { });
+            const msg = await sendPhotoWarning();
+            subscriptionMessageIds.set(userId, msg.message_id);
+        }
+    } else {
+        if (ctx.message) {
+            options.reply_parameters = { message_id: ctx.message.message_id };
+            if (ctx.message.text) {
+                ctx.session.pending_text = ctx.message.text;
+            }
+        }
+        const msg = await sendPhotoWarning();
+        subscriptionMessageIds.set(userId, msg.message_id);
+    }
+}
+
 export async function subscriptionMiddleware(ctx, next) {
     if (ctx.update.chat_join_request || ctx.update.chat_member) return next();
 
@@ -25,7 +106,12 @@ export async function subscriptionMiddleware(ctx, next) {
     const userId = ctx.from.id;
     const isCheckButton = ctx.callbackQuery?.data === "check_subscription";
 
-    // Kesh tekshirish — "Tekshirish" tugmasini bosmagan va kesh yangi bo'lsa, o'tkazish
+    if (ctx.callbackQuery?.data?.startsWith("already_subbed_")) {
+        return next();
+    }
+
+    // Kesh tekshirish — "Tekshirish" tugmasi bosilmagan va kesh yangi bo'lsa,
+    // Telegram API'ga umuman murojaat qilmaymiz.
     const userCache = _userSubCache.get(userId);
     if (!isCheckButton && userCache) {
         const ttl = userCache.hasMissing ? USER_SUB_TTL_MISSING : USER_SUB_TTL_OK;
@@ -33,6 +119,17 @@ export async function subscriptionMiddleware(ctx, next) {
             if (!userCache.hasMissing) {
                 return next();
             }
+
+            // Obunasi to'liq emasligi keshdan ma'lum — qayta tekshirmasdan
+            // (getChatMember'siz) bloklab, ogohlantirishni ko'rsatamiz.
+            const channels = await ApiService.getRequiredChannels();
+            if (!channels || channels.length === 0) {
+                _userSubCache.set(userId, { status: {}, hasMissing: false, checkedAt: Date.now() });
+                return next();
+            }
+            const missings = computeMissingNames(channels, userCache.status, userId);
+            await showSubscriptionWarning(ctx, channels, userCache.status, missings);
+            return;
         }
     }
 
@@ -52,7 +149,7 @@ export async function subscriptionMiddleware(ctx, next) {
     // Parallel tekshiruv (barcha kanallarni BIR VAQTDA tekshiradi)
     const results = await Promise.allSettled(
         channels.map(async (channel) => {
-            if (channel.isPrivate && [748583274, 1555265395, 8222727492, 6919840656, 791067564].includes(userId)) {
+            if (isPrivateBypassUser(channel, userId)) {
                 return { channelId: channel.telegram_id, subscribed: true, name: channel.name };
             }
             if (pendingJoinRequests.has(`${channel.telegram_id}_${userId}`)) {
@@ -64,7 +161,8 @@ export async function subscriptionMiddleware(ctx, next) {
         })
     );
 
-    for (const result of results) {
+    for (let i = 0; i < results.length; i++) {
+        const result = results[i];
         if (result.status === "fulfilled") {
             const { channelId, subscribed, name } = result.value;
             checkedStatus[channelId] = subscribed;
@@ -77,7 +175,7 @@ export async function subscriptionMiddleware(ctx, next) {
             }
             ctx.session.subscription = { ...ctx.session.subscription, [channelId]: subscribed };
         } else {
-            const channel = channels[results.indexOf(result)];
+            const channel = channels[i];
             console.error(`[Middleware] Kanal tekshirishda xato (${channel?.telegram_id}):`, result.reason?.message);
             checkedStatus[channel?.telegram_id] = false;
             hasMissing = true;
@@ -110,78 +208,11 @@ export async function subscriptionMiddleware(ctx, next) {
     }
 
     if (hasMissing) {
-        const visibleChannels = channels.filter(ch => !(ch.isPrivate && [748583274, 1555265395, 8222727492, 6919840656, 791067564].includes(userId)));
-        const keyboard = KeyboardFactory.createSubscriptionKeyboard(visibleChannels, checkedStatus);
-        const text = "<blockquote><b>⚠️ Botdan to'liq foydalanish uchun quyidagi kanalga a'zo bo'lishingiz shart!</b></blockquote>";
-
-        const options = {
-            caption: text,
-            reply_markup: keyboard,
-            parse_mode: "HTML",
-        };
-
-        const sendPhotoWarning = async () => {
-            if (cachedWarningId) {
-                return await ctx.replyWithPhoto(cachedWarningId, options);
-            }
-            const msg = await ctx.replyWithPhoto(new InputFile("assets/images/icon2.png"), options);
-            if (msg.photo?.[0]?.file_id) {
-                cachedWarningId = msg.photo[0].file_id;
-            }
-            return msg;
-        };
-
-        if (ctx.callbackQuery) {
-            if (ctx.callbackQuery.data === "check_subscription") {
-                try {
-                    if (ctx.callbackQuery.message.text) {
-                        await ctx.deleteMessage().catch(() => { });
-                        const msg = await sendPhotoWarning();
-                        subscriptionMessageIds.set(userId, msg.message_id);
-                    } else {
-                        await ctx.editMessageMedia(
-                            {
-                                type: "photo",
-                                media: cachedWarningId || new InputFile("assets/images/icon2.png"),
-                                caption: text,
-                                parse_mode: options.parse_mode
-                            },
-                            { reply_markup: options.reply_markup }
-                        );
-                        subscriptionMessageIds.set(userId, ctx.callbackQuery.message.message_id);
-                    }
-                } catch (error) {
-                    if (!error.message.includes("message is not modified") && !error.message.includes("media in the message")) {
-                        console.error("[Middleware] Edit message error:", error.message);
-                    }
-                }
-
-                await ctx.answerCallbackQuery({
-                    text: `${missings.join(", ")} kanaliga qo'shilmadingiz`,
-                    show_alert: true,
-                }).catch(() => { });
-            } else if (ctx.callbackQuery.data?.startsWith("already_subbed_")) {
-                return next();
-            } else {
-                await ctx.answerCallbackQuery({ text: "⚠️ Avval kanalga a'zo bo'ling!", show_alert: true }).catch(() => { });
-                await ctx.deleteMessage().catch(() => { });
-                const msg = await sendPhotoWarning();
-                subscriptionMessageIds.set(userId, msg.message_id);
-            }
-        } else {
-            if (ctx.message) {
-                options.reply_parameters = { message_id: ctx.message.message_id };
-                if (ctx.message.text) {
-                    ctx.session.pending_text = ctx.message.text;
-                }
-            }
-            const msg = await sendPhotoWarning();
-            subscriptionMessageIds.set(userId, msg.message_id);
-        }
+        await showSubscriptionWarning(ctx, channels, checkedStatus, missings);
         return;
     }
 
-    if (ctx.callbackQuery && ctx.callbackQuery.data === "check_subscription") {
+    if (isCheckButton) {
         subscriptionMessageIds.delete(userId);
     }
 

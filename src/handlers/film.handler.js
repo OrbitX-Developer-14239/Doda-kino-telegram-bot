@@ -15,6 +15,8 @@ export async function handleSendFilm(ctx) {
         let film = await ApiService.getFilmByCode(filmCode);
 
         if (!film) {
+            // Callback tepada allaqachon javoblangan — shuning uchun oddiy xabar
+            await ctx.reply("<blockquote>❌ Film topilmadi yoki o'chirilgan.</blockquote>", { parse_mode: "HTML" }).catch(() => { });
             return;
         }
 

@@ -1,5 +1,5 @@
 import { ApiService } from "../services/api.service.js";
-import { SUBSCRIBED_STATUSES } from "../config/index.js";
+import { SUBSCRIBED_STATUSES, isPrivateBypassUser } from "../config/index.js";
 import { pendingJoinRequests, subscriptionMessageIds } from "../store/memory.store.js";
 import { KeyboardFactory } from "../keyboards/inline.menus.js";
 import { clearUserSubCache } from "../middlewares/subscription.middleware.js";
@@ -40,7 +40,7 @@ export async function handleChatMember(ctx) {
                         
                         const checkedStatus = {};
                         for (const ch of channels) {
-                            if (ch.isPrivate && [748583274, 1555265395, 8222727492, 6919840656, 791067564].includes(userId)) {
+                            if (isPrivateBypassUser(ch, userId)) {
                                 checkedStatus[ch.telegram_id] = true;
                                 continue;
                             }
@@ -65,7 +65,7 @@ export async function handleChatMember(ctx) {
                         const missingChannelsText = missingNames.join(" va ");
 
                         const text = `<b>❌ Qoida buzildi!</b>\n\n<blockquote>Siz <b>${missingChannelsText}</b> kanalidan chiqib ketganingiz uchun bot sizga yuborgan barcha kinolar qulflab qo'yildi.</blockquote>\n\n<i>Kinolar qulfini ochish uchun quyidagi majburiy kanallarga qaytadan a'zo bo'ling:</i>`;
-                        const visibleChannels = channels.filter(ch => !(ch.isPrivate && [748583274, 1555265395, 8222727492, 6919840656, 791067564].includes(userId)));
+                        const visibleChannels = channels.filter(ch => !isPrivateBypassUser(ch, userId));
                         const subKeyboard = KeyboardFactory.createSubscriptionKeyboard(visibleChannels, checkedStatus);
                         
                         const existingMsgId = subscriptionMessageIds.get(userId);
@@ -123,7 +123,7 @@ export async function handleChatMember(ctx) {
         }
     }
 
-    const visibleChannels = channels.filter(ch => !(ch.isPrivate && [748583274, 1555265395, 8222727492, 6919840656, 791067564].includes(userId)));
+    const visibleChannels = channels.filter(ch => !isPrivateBypassUser(ch, userId));
     const keyboard = KeyboardFactory.createSubscriptionKeyboard(visibleChannels, checkedStatus);
     try {
         await ctx.api.editMessageReplyMarkup(userId, msgId, { reply_markup: keyboard });

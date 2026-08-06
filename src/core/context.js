@@ -1,4 +1,6 @@
 import { session } from "grammy";
+import { cache } from "../services/cache.service.js";
+import { CONFIG } from "../config/index.js";
 
 export function createInitialSession() {
     return {
@@ -20,4 +22,72 @@ export function createInitialSession() {
     };
 }
 
-export const sessionMiddleware = session({ initial: createInitialSession });
+// Redis ishlamay qolgan payt uchun zaxira (TTL bilan — RAM leak bo'lmasligi uchun)
+const FALLBACK_TTL_MS = 6 * 60 * 60 * 1000; // 6 soat
+const memoryFallback = new Map();
+
+const sweepTimer = setInterval(() => {
+    const now = Date.now();
+    for (const [key, entry] of memoryFallback) {
+        if (now - entry.touchedAt > FALLBACK_TTL_MS) memoryFallback.delete(key);
+    }
+}, 10 * 60 * 1000);
+sweepTimer.unref?.();
+
+/**
+ * Session storage: asosiy manba — Redis (restart va scale'ga chidamli),
+ * Redis o'chiq bo'lsa vaqtinchalik RAM fallback ishlaydi.
+ */
+const redisSessionStorage = {
+    _key(key) {
+        return `session:${key}`;
+    },
+
+    async read(key) {
+        if (cache.isReady && cache.client) {
+            try {
+                const raw = await cache.client.get(this._key(key));
+                if (raw) return JSON.parse(raw);
+            } catch (error) {
+                console.error("[Session] read error:", error.message);
+            }
+        }
+        const entry = memoryFallback.get(key);
+        if (entry) {
+            entry.touchedAt = Date.now();
+            return entry.value;
+        }
+        return undefined;
+    },
+
+    async write(key, value) {
+        if (cache.isReady && cache.client) {
+            try {
+                await cache.client.set(this._key(key), JSON.stringify(value), {
+                    EX: CONFIG.SESSION_TTL_SECONDS,
+                });
+                memoryFallback.delete(key);
+                return;
+            } catch (error) {
+                console.error("[Session] write error:", error.message);
+            }
+        }
+        memoryFallback.set(key, { value, touchedAt: Date.now() });
+    },
+
+    async delete(key) {
+        memoryFallback.delete(key);
+        if (cache.isReady && cache.client) {
+            try {
+                await cache.client.del(this._key(key));
+            } catch (error) {
+                console.error("[Session] delete error:", error.message);
+            }
+        }
+    },
+};
+
+export const sessionMiddleware = session({
+    initial: createInitialSession,
+    storage: redisSessionStorage,
+});

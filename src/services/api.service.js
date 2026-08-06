@@ -6,7 +6,8 @@ import { cache } from "./cache.service.js";
 
 const apiClient = axios.create({
     baseURL: CONFIG.API_URL + "/api",
-    timeout: 20000,
+    // Sekin backend bitta update'ni uzoq ushlab turmasligi kerak
+    timeout: CONFIG.API_TIMEOUT_MS,
     // Backend endi barcha endpointlarni himoyalaydi, shuning uchun bot o'zini
     // har so'rovda tanitadi. Ilgari bu header faqat admin oqimlarida yuborilardi.
     headers: { "x-bot-token": CONFIG.BOT_TOKEN },
@@ -44,11 +45,9 @@ export const ApiService = {
             const response = await apiClient.get("/channel");
             const channelsArray = response.data?.data || [];
 
-            if (channelsArray.length >= 0) {
-                _channelsCache = channelsArray;
-                _channelsCacheTime = Date.now();
-                await cache.set(cacheKey, channelsArray, 30);
-            }
+            _channelsCache = channelsArray;
+            _channelsCacheTime = Date.now();
+            await cache.set(cacheKey, channelsArray, 30);
 
             return channelsArray;
         } catch (error) {
@@ -105,7 +104,8 @@ export const ApiService = {
         if (cached) return cached;
 
         try {
-            const response = await apiClient.post("/film/search", { query });
+            // AI qidiruv boshqa endpointlardan sekinroq — unga alohida timeout
+            const response = await apiClient.post("/film/search", { query }, { timeout: 20000 });
 
             const data = response.data?.data || [];
             if (data.length > 0) {

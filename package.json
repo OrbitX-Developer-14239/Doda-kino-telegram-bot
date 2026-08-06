@@ -13,6 +13,7 @@
   "type": "module",
   "main": "src/index.js",
   "dependencies": {
+    "@grammyjs/auto-retry": "^2.0.2",
     "@grammyjs/hydrate": "^1.7.0",
     "@grammyjs/ratelimiter": "^1.2.1",
     "@grammyjs/runner": "^2.0.3",

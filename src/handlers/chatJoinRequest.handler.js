@@ -1,8 +1,7 @@
 import { pendingJoinRequests, subscriptionMessageIds } from "../store/memory.store.js";
 import { ApiService } from "../services/api.service.js";
 import { KeyboardFactory } from "../keyboards/inline.menus.js";
-
-const SUBSCRIBED_STATUSES = ["member", "administrator", "creator"];
+import { SUBSCRIBED_STATUSES, isPrivateBypassUser } from "../config/index.js";
 
 export async function handleChatJoinRequest(ctx) {
     try {
@@ -28,7 +27,7 @@ export async function handleChatJoinRequest(ctx) {
             }
         }
 
-        const visibleChannels = channels.filter(ch => !(ch.isPrivate && [748583274, 1555265395, 8222727492, 6919840656, 791067564].includes(userId)));
+        const visibleChannels = channels.filter(ch => !isPrivateBypassUser(ch, userId));
         const keyboard = KeyboardFactory.createSubscriptionKeyboard(visibleChannels, checkedStatus);
         
         try {
