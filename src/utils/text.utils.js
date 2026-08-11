@@ -36,3 +36,24 @@ export function isNumericCode(str) {
     if (!str) return false;
     return /^\d+$/.test(str.trim());
 }
+
+const MAX_CAPTION_VISIBLE = 1024;
+
+function visibleLength(html) {
+    return html.replace(/<[^>]+>/g, "").length;
+}
+
+export function appendDescription(baseCaption, description) {
+    const labelVisible = "\n\n📃 Qisqacha Tafsif:\n".length;
+    const available = MAX_CAPTION_VISIBLE - visibleLength(baseCaption) - labelVisible;
+
+    if (available <= 1) return baseCaption;
+
+    let desc = String(description || "Tafsif mavjud emas").trim();
+    if (desc.length > available) {
+        desc = desc.slice(0, available - 1).trimEnd() + "…";
+    }
+
+    return baseCaption +
+        `\n\n<blockquote><b>📃 Qisqacha Tafsif:</b>\n<i>${desc}</i></blockquote>`;
+}

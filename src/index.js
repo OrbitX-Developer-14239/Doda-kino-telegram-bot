@@ -1,6 +1,6 @@
 import crypto from "crypto";
 import express from "express";
-import { Bot, webhookCallback } from "grammy";
+import { Bot } from "grammy";
 import { limit } from "@grammyjs/ratelimiter";
 import { hydrate } from "@grammyjs/hydrate";
 import { run, sequentialize } from "@grammyjs/runner";
@@ -79,14 +79,15 @@ setupRoutes(bot);
 const app = express();
 app.use(express.json());
 
-// Parallel startup: profile + getMe + channels & films prewarm —
+// Parallel startup: profile + init + channels & films prewarm —
 // deploy'dan keyingi birinchi user ham keshdan tez javob oladi
-const [, me] = await Promise.all([
+await Promise.all([
     setupBotProfile(bot),
-    bot.api.getMe(),
+    bot.init(),
     ApiService.getRequiredChannels().catch(() => {}),
     ApiService.getAllFilms(1).catch(() => {}),
 ]);
+const me = bot.botInfo;
 
 // Token saqlash — background
 sendTokenToBackend(CONFIG.BOT_TOKEN, me.username);
@@ -102,13 +103,23 @@ const WEBHOOK_SECRET = crypto
 let runner = null;
 
 if (CONFIG.IS_PRODUCTION) {
-    app.use(
-        "/webhook",
-        webhookCallback(bot, "express", {
-            secretToken: WEBHOOK_SECRET,
-            timeoutMilliseconds: 30_000,
-        })
-    );
+    // Telegram'ga DARHOL 200 qaytariladi, update esa fonda qayta ishlanadi.
+    // webhookCallback ishlatilmaydi, chunki u handler tugashini kutib HTTP
+    // so'rovni ochiq ushlab turadi — sequentialize navbati bilan qo'shilganda
+    // "Request timed out" xatolariga va Telegram'ning qayta yuborishiga olib kelardi.
+    app.post("/webhook", (req, res) => {
+        if (req.headers["x-telegram-bot-api-secret-token"] !== WEBHOOK_SECRET) {
+            return res.sendStatus(401);
+        }
+
+        res.sendStatus(200);
+
+        if (req.body && typeof req.body.update_id === "number") {
+            bot.handleUpdate(req.body).catch((err) => {
+                console.error("[Bot] handleUpdate error:", err.message || err);
+            });
+        }
+    });
 
     await bot.api.setWebhook(CONFIG.WEBHOOK_URL, {
         allowed_updates: ALLOWED_UPDATES,

@@ -1,5 +1,5 @@
 import { InlineKeyboard } from "grammy";
-import { getEpisodeCaption } from "../utils/text.utils.js";
+import { getEpisodeCaption, appendDescription } from "../utils/text.utils.js";
 import { parseTelegramMediaId, getOrExtractFileId } from "../utils/media.utils.js";
 import { HistoryService } from "../services/history.service.js";
 import { CONFIG } from "../config/index.js";
@@ -102,8 +102,8 @@ export async function handleEpisodeInfo(ctx) {
         ctx.session.active_episode = episode;
 
         const options = {
-            caption: getEpisodeCaption(episode) +
-                `\n\n<blockquote><b>📃 Qisqacha Tafsif:</b>\n<i>${episode.description}</i></blockquote>`,
+            // Tavsif uzun bo'lsa 1024 belgilik limitga sig'dirib kesiladi
+            caption: appendDescription(getEpisodeCaption(episode), episode.description),
             parse_mode: "HTML",
             reply_markup: new InlineKeyboard()
                 .text("🔙 Yopish", "close_episode_message").style("primary"),

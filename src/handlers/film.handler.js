@@ -1,6 +1,6 @@
 import { ApiService } from "../services/api.service.js";
 import { EpisodesKeyboard } from "../keyboards/episodes.keyboard.js";
-import { getFilmCaption } from "../utils/text.utils.js";
+import { getFilmCaption, appendDescription } from "../utils/text.utils.js";
 import { parseTelegramMediaId } from "../utils/media.utils.js";
 import { handleUnknownCommand } from "./unknownCommand.handler.js";
 
@@ -77,8 +77,8 @@ export async function handleFilmInfo(ctx) {
 
         ctx.session.active_film = film;
 
-        const caption = getFilmCaption(film) +
-            `\n\n<blockquote><b>📃 Qisqacha Tafsif:</b>\n<i>${film.description || "Tafsif mavjud emas"}</i></blockquote>`;
+        // Tavsif uzun bo'lsa 1024 belgilik limitga sig'dirib kesiladi
+        const caption = appendDescription(getFilmCaption(film), film.description);
 
         await ctx.editMessageCaption({
             caption,
