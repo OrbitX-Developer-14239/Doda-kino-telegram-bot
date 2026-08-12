@@ -61,6 +61,20 @@ class CacheService {
             return null;
         }
     }
+    /**
+     * JSON.parse qilmasdan o'qiydi. Versiya hisoblagichi Redis INCR bilan
+     * oddiy raqam sifatida saqlanadi — uni JSON deb talqin qilish shart emas.
+     */
+    async getRaw(key) {
+        if (!this.isReady || !this.client) return null;
+        try {
+            return await this.client.get(key);
+        } catch (error) {
+            console.error("[Cache] GET raw error:", error.message);
+            return null;
+        }
+    }
+
     async set(key, value, ttlSeconds) {
         if (!this.isReady || !this.client) return;
         try {

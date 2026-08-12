@@ -107,6 +107,7 @@ export async function executeSearchByName(ctx) {
 
         if (films && films.length > 0) {
             ctx.session.films = films;
+            ctx.session.filmsVersion = await ApiService.getCacheVersion();
             ctx.session.page = 1;
 
             const successMessage = generateFilmsListMessage(userText, films, 1);

@@ -3,6 +3,7 @@ import https from "https";
 import axios from "axios";
 import { CONFIG } from "../config/index.js";
 import { cache } from "./cache.service.js";
+import { KEYS } from "./cache-keys.js";
 
 const apiClient = axios.create({
     baseURL: CONFIG.API_URL + "/api",
@@ -68,10 +69,30 @@ export const ApiService = {
         return promise;
     },
 
+    /**
+     * Kesh versiyasi. Backend film/epizod o'zgarganda buni oshiradi.
+     * Sessiyada saqlangan ro'yxat nusxasi shu raqam bilan belgilanadi —
+     * raqam o'zgargan bo'lsa nusxa eskirgan, qayta olish kerak.
+     */
+    async getCacheVersion() {
+        const v = await cache.getRaw(KEYS.version());
+        return v ?? "0";
+    },
+
+    /**
+     * Nom indeksi: `redis-cli KEYS "*"` chiqishida kino o'zbekcha nomi bilan
+     * ko'rinib tursin. Qiymati — kod, ya'ni nomdan kodni topsa ham bo'ladi.
+     * Asosiy o'qish baribir kod bo'yicha ketadi, bu faqat qo'shimcha indeks.
+     */
+    _indexName(keyFn, item, ttlSeconds) {
+        if (!item?.name || item?.code === undefined || item?.code === null) return;
+        cache.set(keyFn(item.name), item.code, ttlSeconds * 10).catch(() => { });
+    },
+
     clearChannelsCache() {
         _channelsCache = null;
         _channelsCacheTime = 0;
-        cache.del("channels_v2").catch(() => { });
+        cache.del(KEYS.channels()).catch(() => { });
     },
 
     async getRequiredChannels() {
@@ -88,7 +109,7 @@ export const ApiService = {
     },
 
     async _fetchAndCacheChannels() {
-        const cacheKey = "channels_v2";
+        const cacheKey = KEYS.channels();
         try {
             const response = await apiClient.get("/channel");
             const channelsArray = response.data?.data || [];
@@ -112,21 +133,23 @@ export const ApiService = {
     },
 
     async getAllFilms(page = 1) {
-        return this._swrGet(`films:all:page:${page}`, CONFIG.CACHE_TTL.ALL_FILMS, async () => {
+        return this._swrGet(KEYS.filmsPage(page), CONFIG.CACHE_TTL.ALL_FILMS, async () => {
             const response = await apiClient.get(`/film?page=${page}`);
             return response.data;
         });
     },
 
     async getFilmByCode(code) {
-        return this._swrGet(`film:code:${code}`, CONFIG.CACHE_TTL.FILM_BY_CODE, async () => {
+        return this._swrGet(KEYS.film(code), CONFIG.CACHE_TTL.FILM_BY_CODE, async () => {
             const response = await apiClient.get(`/film/code/${code}`);
-            return response.data?.data;
+            const film = response.data?.data;
+            this._indexName(KEYS.filmName, film, CONFIG.CACHE_TTL.FILM_BY_CODE);
+            return film;
         });
     },
 
     async searchFilm(query) {
-        const cacheKey = `film:search:${query.toLowerCase().trim()}`;
+        const cacheKey = KEYS.search(query);
         const cached = await cache.get(cacheKey);
         if (cached) return cached;
 
@@ -146,9 +169,11 @@ export const ApiService = {
     },
 
     async getEpisodeByCode(code) {
-        return this._swrGet(`episode:code:${code}`, CONFIG.CACHE_TTL.EPISODE_BY_CODE, async () => {
+        return this._swrGet(KEYS.episode(code), CONFIG.CACHE_TTL.EPISODE_BY_CODE, async () => {
             const response = await apiClient.get(`/episode/code/${code}`);
-            return response.data?.data;
+            const episode = response.data?.data;
+            this._indexName(KEYS.episodeName, episode, CONFIG.CACHE_TTL.EPISODE_BY_CODE);
+            return episode;
         });
     },
 

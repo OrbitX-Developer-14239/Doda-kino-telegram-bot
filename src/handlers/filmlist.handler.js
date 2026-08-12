@@ -45,6 +45,8 @@ export async function handleFilms(ctx, page = 1) {
 
         ctx.session.films = data.films;
         ctx.session.page = page;
+        // Nusxa qaysi versiyada olingani — keyin eskirganini bilish uchun
+        ctx.session.filmsVersion = await ApiService.getCacheVersion();
 
         const films = data.films;
         const currentPage = data.pagination?.currentPage || page;

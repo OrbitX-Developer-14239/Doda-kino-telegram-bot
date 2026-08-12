@@ -34,7 +34,11 @@ export function setupRoutes(bot) {
         await handleStart(ctx);
     });
     bot.command("help", handleHelp);
-    bot.command("films", handleFilms);
+    // DIQQAT: handleFilms(ctx, page) ikkinchi argument oladi, grammY esa
+    // handlerga (ctx, next) uzatadi. To'g'ridan-to'g'ri berilsa `page` o'rniga
+    // `next` funksiyasi tushib, kesh kaliti `films:page:<funksiya kodi>` bo'lib
+    // ketardi — Redis axlat kalit bilan to'lardi va kesh hech qachon ishlamasdi.
+    bot.command("films", (ctx) => handleFilms(ctx));
     bot.command("search", searchByName);
     bot.command("code", searchByCode);
 
@@ -72,7 +76,7 @@ export function setupRoutes(bot) {
     });
     bot.callbackQuery("btn_help", handleHelp);
     bot.callbackQuery("back_to_home", handleStart);
-    bot.callbackQuery("btn_all_films", handleFilms);
+    bot.callbackQuery("btn_all_films", (ctx) => handleFilms(ctx));
     bot.callbackQuery("btn_search_name", searchByName);
     bot.callbackQuery("btn_search_code", searchByCode);
     bot.callbackQuery("cancel_search", cancelSearchHandler);
