@@ -106,8 +106,8 @@ export async function executeSearchByName(ctx) {
         }
 
         if (films && films.length > 0) {
-            ctx.session.films = films;
-            ctx.session.filmsVersion = await ApiService.getCacheVersion();
+            // Natijalar nusxasi sessiyaga YOZILMAYDI — sahifalashda
+            // searchQuery bo'yicha umumiy keshdan qayta o'qiladi.
             ctx.session.page = 1;
 
             const successMessage = generateFilmsListMessage(userText, films, 1);
@@ -281,7 +281,7 @@ export async function executeSearchByCode(ctx) {
                 return;
             }
 
-            ctx.session.active_film = film;
+            // Faqat kod — ma'lumot umumiy keshdan o'qiladi
             ctx.session.active_film_id = code;
             ctx.session.page = 1;
             ctx.session.totalPages = 1;

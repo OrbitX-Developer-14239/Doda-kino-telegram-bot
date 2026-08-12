@@ -1,5 +1,6 @@
 import { EpisodesKeyboard } from "../keyboards/episodes.keyboard.js";
 import { getFilmCaption } from "../utils/text.utils.js";
+import { ApiService } from "../services/api.service.js";
 
 export async function handleEpisodePageChange(ctx) {
     await ctx.answerCallbackQuery();
@@ -7,7 +8,9 @@ export async function handleEpisodePageChange(ctx) {
     const filmCode = Number(ctx.match[1])
     const page = parseInt(ctx.match[2]);
 
-    const film = ctx.session.active_film;
+    // Sessiyadagi nusxa emas, umumiy keshdan — qism qo'shilgan/o'chirilgan
+    // bo'lsa ro'yxat darhol to'g'ri ko'rinadi.
+    const film = await ApiService.getFilmByCode(filmCode);
 
     if (!film || !film.episodes) {
         return;

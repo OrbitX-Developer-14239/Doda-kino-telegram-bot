@@ -1,13 +1,13 @@
 import { FilmsKeyboard } from "../keyboards/films.keyboard.js";
 import { generateFilmsListMessage } from "../utils/text.utils.js";
-import { ApiService } from "../services/api.service.js";
+import { SessionData } from "../services/session-data.service.js";
 
 /**
- * Sahifalash: ro'yxat sessiyada saqlangan nusxadan chiziladi.
+ * Qidiruv natijalari bo'yicha sahifalash.
  *
- * Lekin admin panelda film tahrirlangan/o'chirilgan bo'lsa, o'sha nusxa
- * eskirgan bo'ladi. Buni bilish uchun backend oshirib turadigan versiya
- * raqami solishtiriladi — mos kelmasa ro'yxat qaytadan olinadi.
+ * Natijalar sessiyada SAQLANMAYDI — ular `searchQuery` bo'yicha umumiy
+ * Redis keshidan qayta o'qiladi. Shu sababli admin filmni tahrirlasa,
+ * foydalanuvchi keyingi sahifaga o'tishi bilan yangi ma'lumotni ko'radi.
  */
 export async function handlePageChange(ctx) {
     await ctx.answerCallbackQuery();
@@ -16,25 +16,10 @@ export async function handlePageChange(ctx) {
     ctx.session.page = page;
 
     const searchQuery = ctx.session.searchQuery || "";
-    let films = ctx.session.films || [];
+    const films = await SessionData.getFilmList(ctx);
 
-    try {
-        const currentVersion = await ApiService.getCacheVersion();
-
-        if (films.length && ctx.session.filmsVersion !== currentVersion) {
-            const fresh = searchQuery
-                ? await ApiService.searchFilm(searchQuery)
-                : (await ApiService.getAllFilms(page))?.films;
-
-            if (Array.isArray(fresh) && fresh.length) {
-                films = fresh;
-                ctx.session.films = fresh;
-            }
-            ctx.session.filmsVersion = currentVersion;
-        }
-    } catch {
-        // Versiyani tekshirib bo'lmadi — eski nusxa bilan davom etamiz,
-        // sahifalash umuman ishlamay qolgandan ko'ra shu yaxshi.
+    if (!films.length) {
+        return;
     }
 
     const updatedMessage = generateFilmsListMessage(searchQuery, films, page);

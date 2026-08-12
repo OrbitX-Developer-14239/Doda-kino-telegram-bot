@@ -2,13 +2,22 @@ import { session } from "grammy";
 import { cache } from "../services/cache.service.js";
 import { CONFIG } from "../config/index.js";
 
+/**
+ * Sessiyada faqat FOYDALANUVCHIGA XOS holat saqlanadi.
+ *
+ * Film/epizod ma'lumotlarining nusxasi ATAYLAB yo'q: ilgari bu yerda
+ * `active_film`, `active_episode` va `films[]` to'liq obyektlar turardi —
+ * o'lchangan sessiya 4.7 KB bo'lib, shundan 96% i takroriy nusxa edi
+ * (32 000 foydalanuvchida ~150 MB). Bundan tashqari admin filmni
+ * tahrirlaganda o'sha nusxalar eskirib qolardi.
+ *
+ * Endi faqat kod saqlanadi, ma'lumot umumiy Redis keshidan o'qiladi.
+ */
 export function createInitialSession() {
     return {
         step: "idle",
         active_film_id: null,
-        active_film: null,
-        active_episode: null,
-        films: [],
+        active_episode_code: null,
         searchQuery: "",
         page: 1,
         totalPages: 1,

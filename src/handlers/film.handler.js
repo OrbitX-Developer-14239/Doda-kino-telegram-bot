@@ -3,6 +3,7 @@ import { EpisodesKeyboard } from "../keyboards/episodes.keyboard.js";
 import { getFilmCaption, appendDescription } from "../utils/text.utils.js";
 import { parseTelegramMediaId } from "../utils/media.utils.js";
 import { handleUnknownCommand } from "./unknownCommand.handler.js";
+import { SessionData } from "../services/session-data.service.js";
 
 export async function handleSendFilm(ctx) {
     const filmCode = Number(ctx.match[1])
@@ -20,7 +21,8 @@ export async function handleSendFilm(ctx) {
             return;
         }
 
-        ctx.session.active_film = film;
+        // Nusxa saqlanmaydi — keyingi handlerlar active_film_id orqali
+        // umumiy keshdan o'qiydi, shunda ma'lumot hech qachon eskirmaydi.
         const caption = getFilmCaption(film);
 
         // Orqa fonda (background) ko'rishlar sonini oshiramiz
@@ -65,17 +67,12 @@ export async function handleFilmInfo(ctx) {
     await ctx.answerCallbackQuery();
 
     try {
-        let film = ctx.session.active_film;
-
-        if (!film) {
-            film = await ApiService.getFilmByCode(filmCode);
-        }
+        // To'g'ridan-to'g'ri umumiy keshdan — sessiyadagi nusxa eskirishi mumkin edi
+        const film = await ApiService.getFilmByCode(filmCode);
 
         if (!film) {
             return;
         }
-
-        ctx.session.active_film = film;
 
         // Tavsif uzun bo'lsa 1024 belgilik limitga sig'dirib kesiladi
         const caption = appendDescription(getFilmCaption(film), film.description);
@@ -94,7 +91,7 @@ export async function handleCloseMessage(ctx) {
     await ctx.answerCallbackQuery();
 
     try {
-        const film = ctx.session.active_film;
+        const film = await SessionData.getActiveFilm(ctx);
 
         if (!film) {
             return;

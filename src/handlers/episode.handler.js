@@ -4,30 +4,23 @@ import { parseTelegramMediaId, getOrExtractFileId } from "../utils/media.utils.j
 import { HistoryService } from "../services/history.service.js";
 import { CONFIG } from "../config/index.js";
 import { ApiService } from "../services/api.service.js";
+import { SessionData } from "../services/session-data.service.js";
 
 export async function handleSendEpisode(ctx) {
     const episodeCode = Number(ctx.match[1])
 
     try {
-        let episode = null;
-        const film = ctx.session.active_film;
-        if (film && film.episodes) {
-            const found = film.episodes.find((ep) => String(ep.code) === String(episodeCode));
-            if (found && found.videoFileId) {
-                episode = found;
-            }
-        }
-
-        if (!episode || !episode.videoFileId) {
-            episode = await ApiService.getEpisodeByCode(episodeCode);
-        }
+        // Ilgari avval film ichidagi nusxadan qidirilardi — u eskirgan bo'lishi
+        // mumkin edi. Endi to'g'ridan-to'g'ri umumiy keshdan olinadi (bir manba).
+        const episode = await ApiService.getEpisodeByCode(episodeCode);
 
         if (!episode) {
             await ctx.answerCallbackQuery({ text: "Epizod topilmadi!", show_alert: true });
             return;
         }
 
-        ctx.session.active_episode = episode;
+        // Nusxa emas, faqat kod saqlanadi
+        ctx.session.active_episode_code = episode.code;
 
         // Track episode view
         ApiService.addView("episode", episodeCode);
@@ -87,19 +80,14 @@ export async function handleEpisodeInfo(ctx) {
     const episodeCode = Number(ctx.match[1])
 
     try {
-        let episode = ctx.session.active_episode;
-
-        if (!episode || String(episode.code) !== String(episodeCode) || !episode.description) {
-            const { ApiService } = await import("../services/api.service.js");
-            episode = await ApiService.getEpisodeByCode(episodeCode);
-        }
+        const episode = await ApiService.getEpisodeByCode(episodeCode);
 
         if (!episode) {
             await ctx.answerCallbackQuery({ text: "Epizod topilmadi!", show_alert: true });
             return;
         }
 
-        ctx.session.active_episode = episode;
+        ctx.session.active_episode_code = episode.code;
 
         const options = {
             // Tavsif uzun bo'lsa 1024 belgilik limitga sig'dirib kesiladi
@@ -122,7 +110,7 @@ export async function handleCloseEpisodeMessage(ctx) {
     await ctx.answerCallbackQuery();
 
     try {
-        const episode = ctx.session.active_episode;
+        const episode = await SessionData.getActiveEpisode(ctx);
 
         if (!episode) {
             return;

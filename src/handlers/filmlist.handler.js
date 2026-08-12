@@ -43,10 +43,9 @@ export async function handleFilms(ctx, page = 1) {
             return;
         }
 
-        ctx.session.films = data.films;
+        // Ro'yxat nusxasi sessiyaga yozilmaydi: sahifa almashganda
+        // handleAllFilmsPageChange baribir keshdan qayta o'qiydi.
         ctx.session.page = page;
-        // Nusxa qaysi versiyada olingani — keyin eskirganini bilish uchun
-        ctx.session.filmsVersion = await ApiService.getCacheVersion();
 
         const films = data.films;
         const currentPage = data.pagination?.currentPage || page;
