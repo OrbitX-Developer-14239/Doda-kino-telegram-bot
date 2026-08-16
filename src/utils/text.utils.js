@@ -55,5 +55,5 @@ export function appendDescription(baseCaption, description) {
     }
 
     return baseCaption +
-        `\n\n<blockquote><b>📃 Qisqacha Tafsif:</b>\n<i>${desc}</i></blockquote>`;
+        `\n\n<b>📃 Qisqacha tavsif:</b>\n<blockquote><i>${desc}</i></blockquote>`;
 }
