@@ -1,7 +1,9 @@
 import { InlineKeyboard } from "grammy";
 import { CONFIG } from "../config/index.js";
+import { addButtonRows } from "./keyboard.utils.js";
 
 const PAGE_SIZE = CONFIG.ITEMS_PER_PAGE;
+const FILM_COLUMNS = 6;
 
 function addPaginationButtons(keyboard, currentPage, totalPages, callbackPrefix) {
     if (totalPages <= 1) return;
@@ -18,39 +20,24 @@ function addPaginationButtons(keyboard, currentPage, totalPages, callbackPrefix)
         .row();
 }
 
-function addFilmButtons(keyboard, films, currentPage, columnsPerRow = 6) {
-    films.forEach((film, i) => {
-        const globalIndex = (currentPage - 1) * PAGE_SIZE + i + 1;
-        keyboard.text(`${globalIndex}`, `send_film_${film.code}`);
-
-        if (films.length < PAGE_SIZE && films.length > columnsPerRow) {
-            const half = Math.ceil(films.length / 2);
-            if (i === half - 1) {
-                keyboard.row();
-            }
-        } else if ((i + 1) % columnsPerRow === 0) {
-            keyboard.row();
-        }
-    });
-
-    if (films.length % columnsPerRow !== 0) {
-        keyboard.row();
-    }
-}
-
 export const FilmsKeyboard = {
     searchKeyboard(films, ctx) {
         const keyboard = new InlineKeyboard();
 
-        ctx.session.page = ctx.session.page || 1;
-        ctx.session.totalPages = Math.ceil(films.length / PAGE_SIZE);
+        const totalPages = Math.max(Math.ceil(films.length / PAGE_SIZE), 1);
+        const currentPage = Math.min(Math.max(ctx.session.page || 1, 1), totalPages);
 
-        const currentPage = ctx.session.page;
-        const totalPages = ctx.session.totalPages;
+        ctx.session.page = currentPage;
+        ctx.session.totalPages = totalPages;
 
-        const currentFilms = films.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+        const startIndex = (currentPage - 1) * PAGE_SIZE;
+        const currentFilms = films.slice(startIndex, startIndex + PAGE_SIZE);
 
-        addFilmButtons(keyboard, currentFilms, currentPage, 6);
+        addButtonRows(keyboard, currentFilms, FILM_COLUMNS, (film, i) => ({
+            label: `${startIndex + i + 1}`,
+            data: `send_film_${film.code}`,
+        }));
+
         addPaginationButtons(keyboard, currentPage, totalPages, "films_page_");
 
         keyboard.text("🔙 Orqaga", "btn_search_name");
@@ -58,26 +45,14 @@ export const FilmsKeyboard = {
         return keyboard;
     },
 
-    getFilmsKeyboard(films, currentPage, totalPages, totalFilms) {
+    getFilmsKeyboard(films, currentPage, totalPages) {
         const keyboard = new InlineKeyboard();
+        const startIndex = (currentPage - 1) * PAGE_SIZE;
 
-        films.forEach((film, i) => {
-            const globalIndex = (currentPage - 1) * PAGE_SIZE + i + 1;
-            keyboard.text(`${globalIndex}`, `send_film_${film.code}`);
-
-            if (totalFilms < PAGE_SIZE && totalFilms > 6) {
-                const half = Math.ceil(totalFilms / 2);
-                if (i === half - 1) {
-                    keyboard.row();
-                }
-            } else if ((i + 1) % 6 === 0) {
-                keyboard.row();
-            }
-        });
-
-        if (films.length % 6 !== 0) {
-            keyboard.row();
-        }
+        addButtonRows(keyboard, films, FILM_COLUMNS, (film, i) => ({
+            label: `${startIndex + i + 1}`,
+            data: `send_film_${film.code}`,
+        }));
 
         addPaginationButtons(keyboard, currentPage, totalPages, "all_films_page_");
 

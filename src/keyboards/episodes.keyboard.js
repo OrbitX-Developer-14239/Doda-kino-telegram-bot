@@ -1,7 +1,9 @@
 import { InlineKeyboard } from "grammy";
 import { CONFIG } from "../config/index.js";
+import { addButtonRows } from "./keyboard.utils.js";
 
 const PAGE_SIZE = CONFIG.ITEMS_PER_PAGE;
+const EPISODE_COLUMNS = 4;
 
 export const EpisodesKeyboard = {
     getEpisodesKeyboard(episodes, ctx, filmCode) {
@@ -14,43 +16,33 @@ export const EpisodesKeyboard = {
             return keyboard;
         }
 
-        ctx.session.page = ctx.session.page || 1;
-        ctx.session.totalPages = Math.ceil(safeEpisodes.length / PAGE_SIZE);
+        const totalPages = Math.ceil(safeEpisodes.length / PAGE_SIZE);
 
-        const currentPage = ctx.session.page;
-        const totalPages = ctx.session.totalPages;
-        const columnsPerRow = 4;
+        // Sahifa raqamini chegaraga sig'diramiz — sessiyada boshqa ro'yxatdan
+        // qolgan katta raqam bo'lsa, qismlar umuman ko'rinmay qolmasin.
+        const currentPage = Math.min(Math.max(ctx.session.page || 1, 1), totalPages);
 
-        const currentEpisodes = safeEpisodes.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+        ctx.session.page = currentPage;
+        ctx.session.totalPages = totalPages;
 
-        currentEpisodes.forEach((episode, i) => {
-            const globalIndex = (currentPage - 1) * PAGE_SIZE + i + 1;
-            keyboard.text(`${globalIndex}-qism`, `send_episode_${episode.code}`);
+        const startIndex = (currentPage - 1) * PAGE_SIZE;
+        const currentEpisodes = safeEpisodes.slice(startIndex, startIndex + PAGE_SIZE);
 
-            if (currentEpisodes.length < PAGE_SIZE && currentEpisodes.length > columnsPerRow) {
-                const half = Math.ceil(currentEpisodes.length / 2);
-                if (i === half - 1) {
-                    keyboard.row();
-                }
-            } else if ((i + 1) % columnsPerRow === 0) {
-                keyboard.row();
-            }
-        });
+        addButtonRows(keyboard, currentEpisodes, EPISODE_COLUMNS, (episode, i) => ({
+            label: `${startIndex + i + 1}-qism`,
+            data: `send_episode_${episode.code}`,
+        }));
 
-        if (currentEpisodes.length % columnsPerRow !== 0) {
-            keyboard.row();
-        }
-
-        if (safeEpisodes.length > PAGE_SIZE) {
+        if (totalPages > 1) {
             const prevPage = currentPage > 1 ? currentPage - 1 : 1;
             const nextPage = currentPage < totalPages ? currentPage + 1 : totalPages;
 
             keyboard
                 .text("⬅️", prevPage === currentPage ? "no_prev_page" : `episodes_page_${filmCode}_${prevPage}`)
-                .style(currentPage === 1 ? "danger" : "primary")
+                .style(prevPage === currentPage ? "danger" : "primary")
                 .text(`${currentPage}/${totalPages}`, "current_page_status")
                 .text("➡️", nextPage === currentPage ? "no_next_page" : `episodes_page_${filmCode}_${nextPage}`)
-                .style(currentPage === totalPages ? "danger" : "primary")
+                .style(nextPage === currentPage ? "danger" : "primary")
                 .row();
         }
 

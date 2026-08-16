@@ -67,7 +67,7 @@ export async function handleFilms(ctx, page = 1) {
 
         const options = {
             parse_mode: "HTML",
-            reply_markup: FilmsKeyboard.getFilmsKeyboard(films, currentPage, totalPages, totalFilms),
+            reply_markup: FilmsKeyboard.getFilmsKeyboard(films, currentPage, totalPages),
         };
 
         if (ctx.callbackQuery) {
