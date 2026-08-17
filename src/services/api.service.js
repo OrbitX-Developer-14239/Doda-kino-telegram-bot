@@ -177,6 +177,21 @@ export const ApiService = {
         });
     },
 
+    /**
+     * Bot a'zo bo'lgan chat haqida backendga xabar beradi.
+     * `my_chat_member` hodisasida chaqiriladi — panel shu ro'yxatdan
+     * yangi kanal tanlaydi.
+     */
+    async syncDiscoveredChat(payload) {
+        try {
+            const response = await apiClient.post("/channel/discovered", payload);
+            return response.data;
+        } catch (error) {
+            console.error("[API] syncDiscoveredChat error:", error.message);
+            return null;
+        }
+    },
+
     async saveToken(token, username) {
         try {
             const response = await apiClient.post("/bot/save", { token, username });

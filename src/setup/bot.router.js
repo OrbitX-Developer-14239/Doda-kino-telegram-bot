@@ -1,5 +1,6 @@
 import { handleChatJoinRequest } from "../handlers/chatJoinRequest.handler.js";
 import { handleChatMember } from "../handlers/chatMember.handler.js";
+import { handleMyChatMember } from "../handlers/myChatMember.handler.js";
 import { handleStart } from "../handlers/start.handler.js";
 import { handleHelp } from "../handlers/help.handler.js";
 import { searchByName, searchByCode, cancelSearchHandler } from "../handlers/search.handler.js";
@@ -101,6 +102,8 @@ export function setupRoutes(bot) {
 
     bot.on("chat_join_request", handleChatJoinRequest);
     bot.on("chat_member", handleChatMember);
+    // Botning O'ZI kanalga qo'shilgani/admin qilingani
+    bot.on("my_chat_member", handleMyChatMember);
     bot.on("message:contact", handleAdminContact);
 
     bot.on("message:text", async (ctx) => {

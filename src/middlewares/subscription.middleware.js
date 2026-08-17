@@ -101,7 +101,12 @@ async function showSubscriptionWarning(ctx, channels, checkedStatus, missings) {
 }
 
 export async function subscriptionMiddleware(ctx, next) {
-    if (ctx.update.chat_join_request || ctx.update.chat_member) return next();
+    // Xizmat yangilanishlari obuna tekshiruvidan o'tkazilmaydi.
+    // my_chat_member ham shu yerda: u kanaldan keladi, quyidagi "private emas"
+    // sharti uni next() siz to'xtatib qo'yardi — natijada handler ishlamasdi.
+    if (ctx.update.chat_join_request || ctx.update.chat_member || ctx.update.my_chat_member) {
+        return next();
+    }
 
     if (ctx.chat && ctx.chat.type !== "private") return;
 

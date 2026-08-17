@@ -92,7 +92,11 @@ const me = bot.botInfo;
 // Token saqlash — background
 sendTokenToBackend(CONFIG.BOT_TOKEN, me.username);
 
-const ALLOWED_UPDATES = ["message", "callback_query", "chat_member", "chat_join_request"];
+// my_chat_member — BOTNING o'zi kanalga qo'shilgani / admin qilingani / chiqarilgani.
+// Telegram bu turdagi yangilanishni faqat shu ro'yxatda bo'lsagina yuboradi.
+// Usiz bot o'zi qaysi kanallarda borligini umuman bila olmaydi (Bot API da
+// "chatlar ro'yxati" metodi yo'q), shuning uchun panel ro'yxati ham bo'sh qolardi.
+const ALLOWED_UPDATES = ["message", "callback_query", "chat_member", "my_chat_member", "chat_join_request"];
 
 // Webhook URL'ini bilgan begonalar soxta update yubora olmasligi uchun
 const WEBHOOK_SECRET = crypto
