@@ -16,6 +16,7 @@ import { CONFIG } from "../config/index.js";
 export function createInitialSession() {
     return {
         step: "idle",
+        step_at: 0,
         active_film_id: null,
         active_episode_code: null,
         searchQuery: "",

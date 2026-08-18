@@ -11,9 +11,9 @@ function escapeHtml(value) {
 
 function buildContactRequestKeyboard() {
     return new Keyboard()
-        .text("❌ Bekor qilish")
-        .row()
         .requestContact("📩 Raqamni yuborish")
+        .row()
+        .text("❌ Bekor qilish")
         .oneTime()
         .resized();
 }

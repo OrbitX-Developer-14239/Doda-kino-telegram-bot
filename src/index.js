@@ -9,6 +9,7 @@ import { CONFIG } from "./config/index.js";
 import { cache } from "./services/cache.service.js";
 import { sessionMiddleware } from "./core/context.js";
 import { subscriptionMiddleware } from "./middlewares/subscription.middleware.js";
+import { stepExpiryMiddleware } from "./middlewares/step.middleware.js";
 import { setupBotProfile } from "./setup/bot.profile.js";
 import { sendTokenToBackend, setupRoutes } from "./setup/bot.router.js";
 import { ApiService } from "./services/api.service.js";
@@ -72,6 +73,7 @@ bot.use(sequentialize((ctx) => ctx.from?.id?.toString() ?? ctx.chat?.id?.toStrin
 
 bot.use(hydrate());
 bot.use(sessionMiddleware);
+bot.use(stepExpiryMiddleware);
 bot.use(subscriptionMiddleware);
 
 setupRoutes(bot);
