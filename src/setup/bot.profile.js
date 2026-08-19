@@ -1,6 +1,4 @@
-import fs from "fs";
 import { InputFile } from "grammy";
-import { CONFIG } from "../config/index.js";
 import { BRAND, PROFILE_TEXTS, COMMANDS } from "../config/branding.js";
 
 /**
@@ -14,14 +12,11 @@ export async function setupBotProfile(bot) {
         // startup'ni sekinlashtiradi — shuning uchun faqat SETUP_PROFILE=1
         // bo'lganda (profil o'zgarganda bir marta) ishga tushiriladi.
         if (process.env.SETUP_PROFILE === "1") {
-            // Har botning o'z ikonkasi: assets/images/icon-<BOT_ID>.png
-            // bo'lsa o'sha, bo'lmasa umumiy icon.png ishlatiladi.
-            const perBotIcon = `assets/images/icon-${CONFIG.BOT_ID}.png`;
-            const iconPath = fs.existsSync(perBotIcon) ? perBotIcon : "assets/images/icon.png";
-
+            // Uchala bot ham BITTA rasmni ishlatadi.
+            // Diqqat: fayl nomi katta "I" bilan — Linux katta-kichikni farqlaydi.
             await bot.api.setMyProfilePhoto({
                 type: "static",
-                photo: new InputFile(iconPath),
+                photo: new InputFile("assets/images/Icon.png"),
             });
 
             await bot.api.setMyDescription(PROFILE_TEXTS.descriptionUz, { language_code: "uz" });
