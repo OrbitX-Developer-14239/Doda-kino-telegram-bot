@@ -1,4 +1,5 @@
 import { InputFile } from "grammy";
+import { BRAND } from "../config/branding.js";
 import { KeyboardFactory } from "../keyboards/inline.menus.js";
 import { FileIdService } from "../services/fileid.service.js";
 
@@ -27,15 +28,15 @@ export async function handleHelp(ctx) {
     
     const helpText =
         `📃 <b>Bot haqida:</b>\n` +
-        `<blockquote><i>📽️ <b>Doda kino — </b> filmlarni tez, qulay va oson topish uchun yaratilgan Telegram boti. Bot orqali film nomi, maxsus kodi yoki sun'iy intellekt (AI) qidiruvi yordamida kerakli filmni topishingiz mumkin.\n\n` +
-        `🤖 Bot muntazam ravishda yangilanib boriladi va foydalanuvchilarga sifatli hamda qulay xizmat ko'rsatishni maqsad qiladi. Oddiy va tushunarli interfeys tufayli kerakli filmni bir necha soniya ichida topishingiz mumkin.\n\n` +
-        `⭐ Doda kino bilan sevimli filmlaringizni izlash yanada oson va qulay!</i></blockquote>\n\n` +
+        `<blockquote><i>📽️ <b>${BRAND.name} — </b> ${BRAND.plural}ni tez, qulay va oson topish uchun yaratilgan Telegram boti. Bot orqali ${BRAND.item} nomi, maxsus kodi yoki sun'iy intellekt (AI) qidiruvi yordamida kerakli ${BRAND.item}ni topishingiz mumkin.\n\n` +
+        `🤖 Bot muntazam ravishda yangilanib boriladi va foydalanuvchilarga sifatli hamda qulay xizmat ko'rsatishni maqsad qiladi. Oddiy va tushunarli interfeys tufayli kerakli ${BRAND.item}ni bir necha soniya ichida topishingiz mumkin.\n\n` +
+        `⭐ ${BRAND.name} bilan sevimli ${BRAND.plural}ingizni izlash yanada oson va qulay!</i></blockquote>\n\n` +
         `⚙️ <b>Bot buyruqlari:</b>\n` +
         `<blockquote><b>/start — </b> <i>Botni qayta ishga tushirish</i>\n` +
         `<b>/help — </b> <i>Bot bo'yicha to'liq qo'llanma</i>\n` +
         `<b>/search — </b> <i>Sun'iy intellekt orqali matnli qidiruv</i>\n` +
         `<b>/code — </b> <i>Raqamli kod orqali qidiruv</i>\n` +
-        `<b>/films — </b> <i>Botdagi barcha filmlar ro'yxati</i></blockquote>`;
+        `<b>/films — </b> <i>Botdagi barcha ${BRAND.plural} ro'yxati</i></blockquote>`;
 
     const keyboard = KeyboardFactory.createBacktoHomeMenu();
 

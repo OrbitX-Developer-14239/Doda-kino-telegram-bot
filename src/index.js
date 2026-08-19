@@ -11,7 +11,7 @@ import { sessionMiddleware } from "./core/context.js";
 import { subscriptionMiddleware } from "./middlewares/subscription.middleware.js";
 import { stepExpiryMiddleware } from "./middlewares/step.middleware.js";
 import { setupBotProfile } from "./setup/bot.profile.js";
-import { sendTokenToBackend, setupRoutes } from "./setup/bot.router.js";
+import { setupRoutes } from "./setup/bot.router.js";
 import { ApiService } from "./services/api.service.js";
 import { TTLSet } from "./store/memory.store.js";
 
@@ -91,8 +91,9 @@ await Promise.all([
 ]);
 const me = bot.botInfo;
 
-// Token saqlash — background
-sendTokenToBackend(CONFIG.BOT_TOKEN, me.username);
+// Eslatma: ilgari bu yerda bot tokenini backendga yuborish bor edi.
+// Multibotda OLIB TASHLANDI — tokenlar backend .env ida turadi, tarmoq
+// orqali token yurmaydi va bot o'zini ro'yxatdan o'tkazishi shart emas.
 
 // my_chat_member — BOTNING o'zi kanalga qo'shilgani / admin qilingani / chiqarilgani.
 // Telegram bu turdagi yangilanishni faqat shu ro'yxatda bo'lsagina yuboradi.

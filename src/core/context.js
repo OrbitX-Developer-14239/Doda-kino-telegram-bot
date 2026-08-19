@@ -1,6 +1,7 @@
 import { session } from "grammy";
 import { cache } from "../services/cache.service.js";
 import { CONFIG } from "../config/index.js";
+import { KEYS } from "../services/cache-keys.js";
 
 /**
  * Sessiyada faqat FOYDALANUVCHIGA XOS holat saqlanadi.
@@ -50,7 +51,9 @@ sweepTimer.unref?.();
  */
 const redisSessionStorage = {
     _key(key) {
-        return `session:${key}`;
+        // Bot ID prefiksi bilan — 3 ta bot bitta Redis'ni bo'lishadi,
+        // bir foydalanuvchi ikki botda yozishsa sessiyalari aralashmasin
+        return KEYS.session(key);
     },
 
     async read(key) {

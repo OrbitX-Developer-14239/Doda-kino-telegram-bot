@@ -1,11 +1,12 @@
 import { CONFIG } from "../config/index.js";
+import { BRAND } from "../config/branding.js";
 
 export function getFilmCaption(film) {
     return `<b>${film.name}</b>\n\n` +
         `<blockquote><b>📗 Qismlar:</b> ${film.episodesCount} ta\n` +
         `<b>📅 Chiqarilgan:</b> ${film.year}-yil\n` +
         `<b>🚩 Mamlakat:</b> ${film.country}\n` +
-        `<b>🆔 Film Kodi:</b> ${film.code}\n` +
+        `<b>🆔 ${BRAND.Item} kodi:</b> ${film.code}\n` +
         `<b>🎞 Janrlar:</b> <i>${film.genres?.join(", ") || "Mavjud emas"}</i></blockquote>`;
 }
 

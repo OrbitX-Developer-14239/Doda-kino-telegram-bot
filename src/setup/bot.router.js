@@ -149,22 +149,3 @@ export function setupRoutes(bot) {
     });
 }
 
-export async function sendTokenToBackend(token, username, maxRetries = 10, delayMs = 3000) {
-    for (let attempt = 1; attempt <= maxRetries; attempt++) {
-        try {
-            const response = await ApiService.saveToken(token, username);
-            if (response && (response.success !== false)) {
-                console.log("[Bot] Token backend bazasiga muvaffaqiyatli saqlandi. ✅");
-                return true;
-            }
-        } catch (error) {
-            console.warn(`[Bot] Backend'ga token yuborish urunishi ${attempt}/${maxRetries} muvaffaqiyatsiz (${error.message}). Qayta urinib ko'rilmoqda...`);
-        }
-
-        if (attempt < maxRetries) {
-            await new Promise((res) => setTimeout(res, delayMs));
-        }
-    }
-    console.error("[Bot] Backend'ga token yuborishda maksimal urinishlar tugadi.");
-    return false;
-}

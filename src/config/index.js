@@ -2,6 +2,11 @@ import "dotenv/config";
 
 export const CONFIG = {
     BOT_TOKEN: process.env.BOT_TOKEN,
+    // Telegram bot ID si — token boshidagi raqam. Backend multibot bo'lgani
+    // uchun har so'rov /api/<BOT_ID>/... ko'rinishida yuboriladi va barcha
+    // Redis kalitlari shu ID bilan prefikslanadi (botlar bitta Redis'ni
+    // bo'lishadi, kalitlar aralashmasligi kerak).
+    BOT_ID: String(process.env.BOT_TOKEN || "").split(":")[0],
     API_URL: process.env.API_URL,
     CHANNEL_ID: process.env.CHANNEL_ID,
     DUMP_CHANNEL: process.env.DUMP_CHANNEL,

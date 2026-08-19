@@ -6,7 +6,10 @@ import { cache } from "./cache.service.js";
 import { KEYS } from "./cache-keys.js";
 
 const apiClient = axios.create({
-    baseURL: CONFIG.API_URL + "/api",
+    // MULTIBOT: backend bir nechta botga xizmat qiladi — har so'rov
+    // /api/<BOT_ID>/... ko'rinishida yuboriladi, backend shu ID bo'yicha
+    // to'g'ri bazani tanlaydi. Header dagi token ID ga mos kelishi shart.
+    baseURL: `${CONFIG.API_URL}/api/${CONFIG.BOT_ID}`,
     // Sekin backend bitta update'ni uzoq ushlab turmasligi kerak
     timeout: CONFIG.API_TIMEOUT_MS,
     // Backend endi barcha endpointlarni himoyalaydi, shuning uchun bot o'zini
@@ -192,15 +195,6 @@ export const ApiService = {
         }
     },
 
-    async saveToken(token, username) {
-        try {
-            const response = await apiClient.post("/bot/save", { token, username });
-            return response.data;
-        } catch (error) {
-            console.error("[API] saveToken error:", error.message);
-            throw error;
-        }
-    },
 
     async createUser(user) {
         try {

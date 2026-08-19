@@ -1,4 +1,5 @@
 import { ApiService } from "../services/api.service.js";
+import { BRAND } from "../config/branding.js";
 import { EpisodesKeyboard } from "../keyboards/episodes.keyboard.js";
 import { getFilmCaption, appendDescription } from "../utils/text.utils.js";
 import { parseTelegramMediaId } from "../utils/media.utils.js";
@@ -17,7 +18,7 @@ export async function handleSendFilm(ctx) {
 
         if (!film) {
             // Callback tepada allaqachon javoblangan — shuning uchun oddiy xabar
-            await ctx.reply("<blockquote>❌ Film topilmadi yoki o'chirilgan.</blockquote>", { parse_mode: "HTML" }).catch(() => { });
+            await ctx.reply(`<blockquote>❌ ${BRAND.Item} topilmadi yoki o'chirilgan.</blockquote>`, { parse_mode: "HTML" }).catch(() => { });
             return;
         }
 

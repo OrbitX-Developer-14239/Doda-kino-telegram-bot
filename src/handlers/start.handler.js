@@ -1,4 +1,5 @@
 import { InputFile } from "grammy";
+import { BRAND } from "../config/branding.js";
 import { KeyboardFactory } from "../keyboards/inline.menus.js";
 import { ApiService } from "../services/api.service.js";
 import { FileIdService } from "../services/fileid.service.js";
@@ -35,7 +36,7 @@ export async function handleStart(ctx) {
     ctx.session.step = "idle";
     const welcomeKeyboard = KeyboardFactory.createHomeMenu();
 
-    const text = `<b>👋 Assalomu alaykum <a href="tg://user?id=${ctx.from.id}">${ctx.from.first_name}</a>, Doda kino botiga xush kelibsiz! \n\n📽️ Bu yerda siz:\n<blockquote>• Eng yangi filmlar\n• Mashhur seriallar\n• Yuqori sifatli videolar\n• Qulay va tezkor qidiruv\n\n⭐ Imkoniyatidan foydalanishingiz mumkin.</blockquote>\n\n🍿 Maroqli tomosha tilaymiz! </b>`;
+    const text = `<b>👋 Assalomu alaykum <a href="tg://user?id=${ctx.from.id}">${ctx.from.first_name}</a>, ${BRAND.name} botiga xush kelibsiz! \n\n📽️ Bu yerda siz:\n<blockquote>${BRAND.startLines}\n\n⭐ Imkoniyatidan foydalanishingiz mumkin.</blockquote>\n\n🍿 Maroqli tomosha tilaymiz! </b>`;
 
     const options = {
         parse_mode: "HTML",

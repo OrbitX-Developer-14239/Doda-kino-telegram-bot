@@ -1,4 +1,5 @@
 import { ApiService } from "../services/api.service.js";
+import { BRAND } from "../config/branding.js";
 import { KeyboardFactory } from "../keyboards/inline.menus.js";
 import { InputFile } from "grammy";
 import { FilmsKeyboard } from "../keyboards/films.keyboard.js";
@@ -36,9 +37,9 @@ export async function handleFilms(ctx, page = 1) {
             };
 
             if (ctx.callbackQuery) {
-                await ctx.editMessageCaption({ caption: "<blockquote>❌ Afsus, hech qanday film topilmadi.</blockquote>", ...errorOptions }).catch(() => {});
+                await ctx.editMessageCaption({ caption: `<blockquote>❌ Afsus, hech qanday ${BRAND.item} topilmadi.</blockquote>`, ...errorOptions }).catch(() => {});
             } else {
-                await ctx.reply("<blockquote>❌ Afsus, hech qanday film topilmadi.</blockquote>", errorOptions).catch(() => {});
+                await ctx.reply(`<blockquote>❌ Afsus, hech qanday ${BRAND.item} topilmadi.</blockquote>`, errorOptions).catch(() => {});
             }
             return;
         }
@@ -61,7 +62,7 @@ export async function handleFilms(ctx, page = 1) {
         }).join("\n");
 
         const caption =
-            `<b>🎬 Botdagi barcha filmlar ro'yxati</b>\n\n` +
+            `<b>${BRAND.emoji} Botdagi barcha ${BRAND.plural} ro'yxati</b>\n\n` +
             `<b>📄 Natijalar: ${firstFilmNumber}-${lastFilmNumber} / ${totalFilms}</b>\n\n` +
             `<blockquote>${filmList}</blockquote>`;
 

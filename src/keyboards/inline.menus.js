@@ -1,4 +1,5 @@
 import { InlineKeyboard } from "grammy";
+import { BRAND } from "../config/branding.js";
 
 export const KeyboardFactory = {
     createSubscriptionKeyboard(channels, checkedStatus = {}) {
@@ -24,7 +25,7 @@ export const KeyboardFactory = {
     createHomeMenu() {
         return new InlineKeyboard()
             .text("📃 Bot haqida malumot", "btn_help").row()
-            .text("🎬 Barcha filmlar", "btn_all_films")
+            .text(`${BRAND.emoji} Barcha ${BRAND.plural}`, "btn_all_films")
             .text("🆔 Kod orqali qidrish", "btn_search_code").row()
             .text("🔍 Nom orqali qidirish", "btn_search_name");
     },

@@ -1,4 +1,5 @@
 import { InputFile, InlineKeyboard } from "grammy";
+import { BRAND } from "../config/branding.js";
 import { FilmsKeyboard } from "../keyboards/films.keyboard.js";
 import { KeyboardFactory } from "../keyboards/inline.menus.js";
 import { EpisodesKeyboard } from "../keyboards/episodes.keyboard.js";
@@ -27,9 +28,9 @@ export async function searchByName(ctx) {
 
     const caption =
         `<b>🔍 Nom orqali qidirish:</b>\n` +
-        `<blockquote><i>Filmni topish uchun unog nomini, biror sahnasini, qahramonlari ismini yoki film haqida esingizda qolgan qisqacha ma'lumotni yuboring.\n Sun'iy intellekt siz yuborgan ma'lumotni tahlil qilib, eng mos filmlarni topishga harakat qiladi. Ma'lumot qanchalik batafsil bo'lsa, qidiruv natijasi shunchalik aniq bo'ladi.</i></blockquote>\n\n` +
+        `<blockquote><i>${BRAND.Item}ni topish uchun uning nomini, biror sahnasini, qahramonlari ismini yoki ${BRAND.item} haqida esingizda qolgan qisqacha ma'lumotni yuboring.\n Sun'iy intellekt siz yuborgan ma'lumotni tahlil qilib, eng mos ${BRAND.plural}ni topishga harakat qiladi. Ma'lumot qanchalik batafsil bo'lsa, qidiruv natijasi shunchalik aniq bo'ladi.</i></blockquote>\n\n` +
         `<b>📝 Misollar:</b>\n` +
-        `<blockquote>• "Titanic"\n• "Bir bola sehrgarlar maktabiga boradi."\n• "Kosmosda omon qolish haqida film."\n• "Bosh qahramoni John Wick."</blockquote>`;
+        `<blockquote>${BRAND.searchExamples}</blockquote>`;
 
     const options = {
         parse_mode: "HTML",
@@ -82,10 +83,10 @@ export async function executeSearchByName(ctx) {
         `<i>⏳ Natijalar tayyorlanmoqda, biroz kuting...</i>`;
 
     const notFoundMessage =
-        `<b>❌ Afsus, hech qanday mos film topilmadi.</b>\n` +
-        `<blockquote><i>Qidiruv natijasida siz yuborgan ma'lumotga mos film aniqlanmadi.</i></blockquote>\n\n` +
+        `<b>❌ Afsus, hech qanday mos ${BRAND.item} topilmadi.</b>\n` +
+        `<blockquote><i>Qidiruv natijasida siz yuborgan ma'lumotga mos ${BRAND.item} aniqlanmadi.</i></blockquote>\n\n` +
         `<b>📝 Misollar:</b>` +
-        `<blockquote>• Film nomini boshqacha yozing.\n• Film haqida ko'proq ma'lumot yuboring.\n• Esingizda qolgan sahna.\n• Aktyor yoki qahramon nomini yozing.\n• Voqealarni qisqacha tasvirlab bering.</blockquote>\n\n` +
+        `<blockquote>• ${BRAND.Item} nomini boshqacha yozing.\n• ${BRAND.Item} haqida ko'proq ma'lumot yuboring.\n• Esingizda qolgan sahna.\n• Aktyor yoki qahramon nomini yozing.\n• Voqealarni qisqacha tasvirlab bering.</blockquote>\n\n` +
         `<b><i>🤖 Sun'iy intellekt batafsilroq ma'lumot asosida aniqroq natijalarni topishga harakat qiladi.</i></b>`;
 
     try {
@@ -148,7 +149,7 @@ export async function searchByCode(ctx) {
 
     const caption =
         `<b>🆔 Kod orqali qidirish:</b>\n` +
-        `<blockquote><i>Filmni topish uchun unga biriktirilgan kodini yuboring.</i></blockquote>\n\n`;
+        `<blockquote><i>${BRAND.Item}ni topish uchun unga biriktirilgan kodini yuboring.</i></blockquote>\n\n`;
 
     const options = {
         parse_mode: "HTML",
@@ -209,9 +210,9 @@ export async function executeSearchByCode(ctx) {
     );
 
     const notFoundMessage =
-        `<b>❌ Afsus, hech qanday mos film topilmadi.</b>\n` +
-        `<blockquote>Qidiruv natijasida siz yuborgan <b>"${code}"</b> kodiga mos film topilmadi.</blockquote>\n\n` +
-        `<b><i>💡 Barcha kinolar ro'yxatini ko'rish uchun /films buyrug'ini yozing.</i></b>`;
+        `<b>❌ Afsus, hech qanday mos ${BRAND.item} topilmadi.</b>\n` +
+        `<blockquote>Qidiruv natijasida siz yuborgan <b>"${code}"</b> kodiga mos ${BRAND.item} topilmadi.</blockquote>\n\n` +
+        `<b><i>💡 Barcha ${BRAND.plural} ro'yxatini ko'rish uchun /films buyrug'ini yozing.</i></b>`;
 
     try {
         if (numCode < 50000) {
@@ -332,9 +333,9 @@ export async function executeSearchByCode(ctx) {
 export async function cancelSearchHandler(ctx) {
     const cancelMessage =
         `<b>❌ Qidiruv bekor qilindi.</b>\n` +
-        `<blockquote><i>Yangi qidiruvni boshlash uchun film nomi yoki tavsifini yuboring.</i></blockquote>\n\n` +
+        `<blockquote><i>Yangi qidiruvni boshlash uchun ${BRAND.item} nomi yoki tavsifini yuboring.</i></blockquote>\n\n` +
         `<b>📝 Misollar:</b>\n` +
-        `<blockquote>• "Titanic"\n• "Bir bola sehrgarlar maktabiga boradi."\n• "Kosmosda omon qolish haqida film."\n• "Bosh qahramoni John Wick."</blockquote>`;
+        `<blockquote>${BRAND.searchExamples}</blockquote>`;
 
     canceledSearches.add(ctx.callbackQuery.message.message_id);
 
