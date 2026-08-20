@@ -12,7 +12,7 @@ export function getFilmCaption(film) {
 
 export function getEpisodeCaption(episode) {
     return `<b>${episode.name}</b>\n\n` +
-        `<blockquote>📕 Qism: ${episode.episodeNumber}\n` +
+        `<blockquote><b>📕 Qism:</b> ${episode.episodeNumber}\n` +
         `<b>📅 Chiqarilgan:</b> ${episode.releaseYear}\n` +
         `<b>🚩 Mamlakat:</b> ${episode.country}\n` +
         `<b>🆔 Qism Kodi:</b> ${episode.code}\n` +
