@@ -1,4 +1,5 @@
 import { handleChatJoinRequest } from "../handlers/chatJoinRequest.handler.js";
+import { BRAND } from "../config/branding.js";
 import { handleChatMember } from "../handlers/chatMember.handler.js";
 import { handleMyChatMember } from "../handlers/myChatMember.handler.js";
 import { handleStart } from "../handlers/start.handler.js";
@@ -39,7 +40,8 @@ export function setupRoutes(bot) {
     // handlerga (ctx, next) uzatadi. To'g'ridan-to'g'ri berilsa `page` o'rniga
     // `next` funksiyasi tushib, kesh kaliti `films:page:<funksiya kodi>` bo'lib
     // ketardi — Redis axlat kalit bilan to'lardi va kesh hech qachon ishlamasdi.
-    bot.command("films", (ctx) => handleFilms(ctx));
+    // Ro'yxat buyrug'i brendga qarab: /films, /multfilmlar yoki /animelar
+    bot.command(BRAND.listCommand, (ctx) => handleFilms(ctx));
     bot.command("search", searchByName);
     bot.command("code", searchByCode);
 

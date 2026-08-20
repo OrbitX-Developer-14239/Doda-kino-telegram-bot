@@ -212,7 +212,7 @@ export async function executeSearchByCode(ctx) {
     const notFoundMessage =
         `<b>❌ Afsus, hech qanday mos ${BRAND.item} topilmadi.</b>\n` +
         `<blockquote>Qidiruv natijasida siz yuborgan <b>"${code}"</b> kodiga mos ${BRAND.item} topilmadi.</blockquote>\n\n` +
-        `<b><i>💡 Barcha ${BRAND.plural} ro'yxatini ko'rish uchun /films buyrug'ini yozing.</i></b>`;
+        `<b><i>💡 Barcha ${BRAND.plural} ro'yxatini ko'rish uchun /${BRAND.listCommand} buyrug'ini yozing.</i></b>`;
 
     try {
         if (numCode < 50000) {

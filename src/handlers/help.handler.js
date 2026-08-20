@@ -36,7 +36,7 @@ export async function handleHelp(ctx) {
         `<b>/help — </b> <i>Bot bo'yicha to'liq qo'llanma</i>\n` +
         `<b>/search — </b> <i>Sun'iy intellekt orqali matnli qidiruv</i>\n` +
         `<b>/code — </b> <i>Raqamli kod orqali qidiruv</i>\n` +
-        `<b>/films — </b> <i>Botdagi barcha ${BRAND.plural} ro'yxati</i></blockquote>`;
+        `<b>/${BRAND.listCommand} — </b> <i>Botdagi barcha ${BRAND.plural} ro'yxati</i></blockquote>`;
 
     const keyboard = KeyboardFactory.createBacktoHomeMenu();
 

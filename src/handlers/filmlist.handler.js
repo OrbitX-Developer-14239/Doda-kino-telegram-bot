@@ -32,6 +32,9 @@ export async function handleFilms(ctx, page = 1) {
 
         if (!data || !data.films || data?.films?.length === 0) {
             const errorOptions = {
+                // parse_mode SHART: usiz <blockquote> tegi foydalanuvchiga
+                // xom matn bo'lib ko'rinardi (bo'sh katalogli botlarda chiqqan).
+                parse_mode: "HTML",
                 reply_markup: KeyboardFactory.createBacktoHomeMenu(),
                 reply_parameters: ctx.message ? { message_id: ctx.message.message_id } : undefined,
             };
