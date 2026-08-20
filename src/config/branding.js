@@ -26,7 +26,7 @@ const BRANDS = {
         item: "film",          // "film topilmadi"
         Item: "Film",          // "Film kodi"
         plural: "filmlar",     // "filmlar ro'yxati"
-        // Ro'yxat buyrug'i — har botda o'z so'zi bilan (/films, /multfilmlar, /animelar)
+        // Ro'yxat buyrug'i — inglizcha: /films, /cartoons, /animes
         listCommand: "films",
         // /start dagi imkoniyatlar ro'yxati
         startLines: "• Eng yangi filmlar\n• Mashhur seriallar\n• Yuqori sifatli videolar\n• Qulay va tezkor qidiruv",
@@ -44,7 +44,7 @@ const BRANDS = {
         item: "multfilm",
         Item: "Multfilm",
         plural: "multfilmlar",
-        listCommand: "multfilmlar",
+        listCommand: "cartoons",
         startLines: "• Eng yangi multfilmlar\n• Mashhur multseriallar\n• Yuqori sifatli videolar\n• Qulay va tezkor qidiruv",
         searchExamples: `• "Muzlik davri"\n• "O'yinchoqlar jonlanib qoladigan multfilm."\n• "Yashil dev va gapiradigan eshak sarguzashtlari."\n• "Sehrli muzlatadigan malika haqida."`,
         uz: "multfilmlarni", ru: "мультфильмы", en: "cartoons",
@@ -58,7 +58,7 @@ const BRANDS = {
         item: "anime",
         Item: "Anime",
         plural: "animelar",
-        listCommand: "animelar",
+        listCommand: "animes",
         startLines: "• Eng yangi animelar\n• Mashhur anime seriallar\n• Yuqori sifatli videolar\n• Qulay va tezkor qidiruv",
         searchExamples: `• "Naruto"\n• "Bola titanga aylanadigan anime."\n• "O'lim daftarini topib olgan yigit."\n• "Bosh qahramoni pirat qiroli bo'lishni orzu qiladi."`,
         uz: "animelarni", ru: "аниме", en: "anime",

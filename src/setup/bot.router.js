@@ -40,7 +40,7 @@ export function setupRoutes(bot) {
     // handlerga (ctx, next) uzatadi. To'g'ridan-to'g'ri berilsa `page` o'rniga
     // `next` funksiyasi tushib, kesh kaliti `films:page:<funksiya kodi>` bo'lib
     // ketardi — Redis axlat kalit bilan to'lardi va kesh hech qachon ishlamasdi.
-    // Ro'yxat buyrug'i brendga qarab: /films, /multfilmlar yoki /animelar
+    // Ro'yxat buyrug'i brendga qarab: /films, /cartoons yoki /animes
     bot.command(BRAND.listCommand, (ctx) => handleFilms(ctx));
     bot.command("search", searchByName);
     bot.command("code", searchByCode);
