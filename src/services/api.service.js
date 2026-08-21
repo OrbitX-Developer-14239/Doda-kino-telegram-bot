@@ -98,6 +98,15 @@ export const ApiService = {
         cache.del(KEYS.channels()).catch(() => { });
     },
 
+    /**
+     * Majburiy kanallar ro'yxatining versiyasi.
+     * Panelda kanal qo'shilsa/tahrirlansa/o'chirilsa backend buni oshiradi.
+     */
+    async getChannelsVersion() {
+        const v = await cache.getRaw(KEYS.channelsVersion());
+        return v ?? "0";
+    },
+
     async getRequiredChannels() {
         if (_channelsCache && Date.now() - _channelsCacheTime < CHANNELS_MEM_TTL) {
             return _channelsCache;

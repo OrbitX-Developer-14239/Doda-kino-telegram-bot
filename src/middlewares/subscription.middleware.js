@@ -13,6 +13,33 @@ const _userSubCache = new Map();
 const USER_SUB_TTL_OK = 1_800_000;   // 30 daqiqa — obunasi to'liq
 const USER_SUB_TTL_MISSING = 15_000; // 15 soniya — obunasi to'liq emas
 
+// Panelda kanal ro'yxati o'zgarganini shu raqam bildiradi.
+// null — hali bir marta ham o'qilmagan (bot endi ishga tushgan).
+let _channelsVersion = null;
+
+/**
+ * Kanal ro'yxati o'zgargan bo'lsa BARCHA keshlarni tashlaydi.
+ *
+ * NEGA SHART: "obunasi to'liq" deb belgilangan foydalanuvchi 30 daqiqa
+ * davomida umuman tekshirilmaydi. Usiz admin yangi majburiy kanal
+ * qo'shsa, u faqat yarim soatdan keyin so'ralardi.
+ */
+async function syncChannelsVersion() {
+    const version = await ApiService.getChannelsVersion();
+
+    if (_channelsVersion === null) {
+        _channelsVersion = version;   // birinchi o'qish — tozalash shart emas
+        return;
+    }
+
+    if (version !== _channelsVersion) {
+        _channelsVersion = version;
+        _userSubCache.clear();
+        ApiService.clearChannelsCache();
+        console.log("[Obuna] Kanallar ro'yxati o'zgardi — keshlar tozalandi");
+    }
+}
+
 export function clearUserSubCache(userId) {
     _userSubCache.delete(userId);
 }
@@ -114,6 +141,10 @@ export async function subscriptionMiddleware(ctx, next) {
 
     const userId = ctx.from.id;
     const isCheckButton = ctx.callbackQuery?.data === "check_subscription";
+
+    // Redis'dan bitta yengil o'qish (~1 ms): panelda kanal o'zgargan bo'lsa
+    // keshlar shu yerda tashlanadi va o'zgarish DARHOL kuchga kiradi.
+    await syncChannelsVersion().catch(() => { });
 
     if (ctx.callbackQuery?.data?.startsWith("already_subbed_")) {
         return next();
