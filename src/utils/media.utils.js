@@ -60,7 +60,11 @@ import { cache } from "../services/cache.service.js";
 const fileIdCache = new Map();
 
 export async function getOrExtractFileId(ctx, channelId, msgId) {
-    const key = `fileid:${channelId}_${msgId}`;
+    // Bot ID prefiksi SHART: file_id Telegram tomonidan BOT TOKENIGA
+    // bog'lab beriladi — bir botniki boshqasida ishlamaydi. Uchala bot
+    // bitta Redis'ni bo'lishgani uchun prefikssiz kalit ular bir xil
+    // kanalda uchrashganda xato file_id qaytarardi.
+    const key = `b${CONFIG.BOT_ID}:fileid:${channelId}_${msgId}`;
     
     // 1. Check Memory Cache
     if (fileIdCache.has(key)) return fileIdCache.get(key);
