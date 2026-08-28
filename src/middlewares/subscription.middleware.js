@@ -74,8 +74,11 @@ async function showSubscriptionWarning(ctx, channels, checkedStatus, missings) {
             return await ctx.replyWithPhoto(cachedWarningId, options);
         }
         const msg = await ctx.replyWithPhoto(new InputFile("assets/images/icon2.png"), options);
-        if (msg.photo?.[0]?.file_id) {
-            FileIdService.set(WARNING_IMAGE_KEY, msg.photo[0].file_id);
+        // DIQQAT: photo[] eng KICHIKdan eng KATTAgacha tartiblangan.
+        // photo[0] — 90px lik eskiz (~1 KB): uni keshlash keyingi barcha
+        // foydalanuvchilarga xira rasm yuborilishiga olib kelardi.
+        if (msg.photo?.length) {
+            FileIdService.set(WARNING_IMAGE_KEY, msg.photo[msg.photo.length - 1].file_id);
         }
         return msg;
     };
@@ -88,7 +91,7 @@ async function showSubscriptionWarning(ctx, channels, checkedStatus, missings) {
                     const msg = await sendPhotoWarning();
                     subscriptionMessageIds.set(userId, msg.message_id);
                 } else {
-                    await ctx.editMessageMedia(
+                    const edited = await ctx.editMessageMedia(
                         {
                             type: "photo",
                             media: cachedWarningId || new InputFile("assets/images/icon2.png"),
@@ -97,6 +100,11 @@ async function showSubscriptionWarning(ctx, channels, checkedStatus, missings) {
                         },
                         { reply_markup: options.reply_markup }
                     );
+                    // Bu tarmoq file_id ni saqlamasdi — kesh bo'sh bo'lsa rasm
+                    // HAR SAFAR diskdan qayta yuklanardi.
+                    if (!cachedWarningId && edited !== true && edited?.photo?.length) {
+                        FileIdService.set(WARNING_IMAGE_KEY, edited.photo[edited.photo.length - 1].file_id);
+                    }
                     subscriptionMessageIds.set(userId, ctx.callbackQuery.message.message_id);
                 }
             } catch (error) {

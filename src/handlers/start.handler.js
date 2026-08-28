@@ -16,8 +16,11 @@ async function replyWithCachedGif(ctx, caption, options) {
 
     const msg = await ctx.replyWithPhoto(new InputFile("assets/images/start.png"), fullOptions);
 
-    if (msg.photo?.[0]?.file_id) {
-        FileIdService.set(IMAGE_KEY, msg.photo[0].file_id);
+    // DIQQAT: photo[] eng KICHIKdan eng KATTAgacha tartiblangan.
+    // photo[0] — 90px lik eskiz (~1 KB): uni keshlash keyingi barcha
+    // foydalanuvchilarga xira rasm yuborilishiga olib kelardi.
+    if (msg.photo?.length) {
+        FileIdService.set(IMAGE_KEY, msg.photo[msg.photo.length - 1].file_id);
     }
 
     if (!ctx.session.is_registered) {
@@ -67,8 +70,8 @@ export async function handleStart(ctx) {
                     { reply_markup: options.reply_markup }
                 );
 
-                if (!cachedGifFileId && msg !== true && msg?.photo?.[0]?.file_id) {
-                    FileIdService.set(IMAGE_KEY, msg.photo[0].file_id);
+                if (!cachedGifFileId && msg !== true && msg?.photo?.length) {
+                    FileIdService.set(IMAGE_KEY, msg.photo[msg.photo.length - 1].file_id);
                 }
             }
             return;
