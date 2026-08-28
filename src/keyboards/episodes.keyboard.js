@@ -4,13 +4,44 @@ import { addButtonRows } from "./keyboard.utils.js";
 
 const PAGE_SIZE = CONFIG.ITEMS_PER_PAGE;
 const EPISODE_COLUMNS = 4;
+const SEASON_COLUMNS = 4;
+
+/** Faslga tegishli qismlar (fasl ko'rsatilmagan eski yozuvlar 1-faslga tegishli) */
+export const episodesOfSeason = (episodes, season) =>
+    (episodes || []).filter((e) => (Number(e.season) || 1) === Number(season));
 
 export const EpisodesKeyboard = {
-    getEpisodesKeyboard(episodes, ctx, filmCode) {
+    /**
+     * Fasl tugmalari: "1-fasl", "2-fasl", ... — bir qatorda 4 tadan.
+     * Faqat fasllar soni 1 dan ko'p bo'lganda ishlatiladi.
+     */
+    getSeasonsKeyboard(film, filmCode) {
         const keyboard = new InlineKeyboard();
-        const safeEpisodes = episodes || [];
+        const seasons = Number(film.seasonsCount) || 1;
+
+        const items = Array.from({ length: seasons }, (_, i) => i + 1);
+        addButtonRows(keyboard, items, SEASON_COLUMNS, (season) => ({
+            label: `${season}-fasl`,
+            data: `season_${filmCode}_${season}`,
+        }));
+
+        keyboard.text("📃 Malumotlar", `film_info_${filmCode}`).row();
+        keyboard.text("🔙 Bosh sahifaga", "back_to_home");
+        return keyboard;
+    },
+
+    /**
+     * @param {number|null} season - berilsa faqat o'sha faslning qismlari
+     *        ko'rsatiladi va "Fasllar" tugmasi qo'shiladi.
+     */
+    getEpisodesKeyboard(episodes, ctx, filmCode, season = null) {
+        const keyboard = new InlineKeyboard();
+        const safeEpisodes = season
+            ? episodesOfSeason(episodes, season)
+            : (episodes || []);
 
         if (safeEpisodes.length === 0) {
+            if (season) keyboard.text("🔙 Fasllar", `seasons_${filmCode}`).row();
             keyboard.text("📃 Malumotlar", `film_info_${filmCode}`).row();
             keyboard.text("🔙 Bosh sahifaga", "back_to_home");
             return keyboard;
@@ -45,6 +76,9 @@ export const EpisodesKeyboard = {
                 .style(nextPage === currentPage ? "danger" : "primary")
                 .row();
         }
+
+        // Ko'p faslli serialda fasllar ro'yxatiga qaytish tugmasi
+        if (season) keyboard.text("🔙 Fasllar", `seasons_${filmCode}`).row();
 
         keyboard.text("📃 Malumotlar", `film_info_${filmCode}`).row();
         keyboard.text("🔙 Bosh sahifaga", "back_to_home");

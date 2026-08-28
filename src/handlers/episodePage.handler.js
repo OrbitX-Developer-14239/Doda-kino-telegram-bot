@@ -18,11 +18,12 @@ export async function handleEpisodePageChange(ctx) {
 
     ctx.session.page = page;
 
-    const caption = getFilmCaption(film);
+    // Ochiq fasl saqlanadi — sahifalash o'sha fasl ichida ketadi
+    const season = ctx.session.active_season || null;
 
     await ctx.editMessageCaption({
-        caption,
+        caption: getFilmCaption(film, season),
         parse_mode: "HTML",
-        reply_markup: EpisodesKeyboard.getEpisodesKeyboard(film.episodes, ctx, filmCode),
+        reply_markup: EpisodesKeyboard.getEpisodesKeyboard(film.episodes, ctx, filmCode, season),
     });
 }

@@ -9,6 +9,7 @@ import { SessionData } from "../services/session-data.service.js";
 export async function handleSendFilm(ctx) {
     const filmCode = Number(ctx.match[1])
     ctx.session.active_film_id = filmCode;
+    ctx.session.active_season = null;
     ctx.session.page = 1;
     ctx.session.totalPages = 1;
     await ctx.answerCallbackQuery();
@@ -24,18 +25,25 @@ export async function handleSendFilm(ctx) {
 
         // Nusxa saqlanmaydi — keyingi handlerlar active_film_id orqali
         // umumiy keshdan o'qiydi, shunda ma'lumot hech qachon eskirmaydi.
-        const caption = getFilmCaption(film);
+        const caption = getFilmCaption(film);   // fasl tanlanmagan
 
         // Orqa fonda (background) ko'rishlar sonini oshiramiz
         ApiService.addView("film", filmCode);
 
         const episodes = film.episodes || [];
 
+        // Ko'p faslli serial bo'lsa avval FASL tugmalari ko'rsatiladi,
+        // bir faslli bo'lsa (yoki fasl kiritilmagan bo'lsa) — to'g'ridan-to'g'ri qismlar.
+        const seasons = Number(film.seasonsCount) || 1;
+        const markup = seasons > 1
+            ? EpisodesKeyboard.getSeasonsKeyboard(film, filmCode)
+            : EpisodesKeyboard.getEpisodesKeyboard(episodes, ctx, filmCode);
+
         const media = parseTelegramMediaId(film.posterId);
         const options = {
             caption,
             parse_mode: "HTML",
-            reply_markup: EpisodesKeyboard.getEpisodesKeyboard(episodes, ctx, filmCode),
+            reply_markup: markup,
         };
 
         if (ctx.callbackQuery?.message?.message_id) {
@@ -98,15 +106,73 @@ export async function handleCloseMessage(ctx) {
             return;
         }
 
-        const caption = getFilmCaption(film);
+        // "Malumotlar" dan qaytishda foydalanuvchi qayerda edi — o'sha ko'rinish:
+        // fasl ochiq bo'lsa o'sha faslning qismlari, aks holda fasllar/qismlar ro'yxati.
+        const season = ctx.session.active_season || null;
+        const seasons = Number(film.seasonsCount) || 1;
         const episodes = film.episodes || [];
 
+        const markup = (seasons > 1 && !season)
+            ? EpisodesKeyboard.getSeasonsKeyboard(film, film.code)
+            : EpisodesKeyboard.getEpisodesKeyboard(episodes, ctx, film.code, season);
+
         await ctx.editMessageCaption({
-            caption,
+            caption: getFilmCaption(film, season),
             parse_mode: "HTML",
-            reply_markup: EpisodesKeyboard.getEpisodesKeyboard(episodes, ctx, film.code),
+            reply_markup: markup,
         });
     } catch (error) {
         console.error("[Film] handleCloseMessage error:", error.message);
+    }
+}
+
+/** Fasl tanlandi -> o'sha faslning qismlari */
+export async function handleSeasonSelect(ctx) {
+    await ctx.answerCallbackQuery();
+
+    const filmCode = Number(ctx.match[1]);
+    const season = Number(ctx.match[2]);
+
+    ctx.session.active_film_id = filmCode;
+    ctx.session.active_season = season;
+    ctx.session.page = 1;
+
+    try {
+        const film = await ApiService.getFilmByCode(filmCode);
+        if (!film) return;
+
+        await ctx.editMessageCaption({
+            caption: getFilmCaption(film, season),
+            parse_mode: "HTML",
+            reply_markup: EpisodesKeyboard.getEpisodesKeyboard(film.episodes || [], ctx, filmCode, season),
+        });
+    } catch (error) {
+        if (!error.message?.includes("message is not modified")) {
+            console.error("[Film] handleSeasonSelect error:", error.message);
+        }
+    }
+}
+
+/** Qismlardan fasllar ro'yxatiga qaytish */
+export async function handleSeasonsBack(ctx) {
+    await ctx.answerCallbackQuery();
+
+    const filmCode = Number(ctx.match[1]);
+    ctx.session.active_season = null;
+    ctx.session.page = 1;
+
+    try {
+        const film = await ApiService.getFilmByCode(filmCode);
+        if (!film) return;
+
+        await ctx.editMessageCaption({
+            caption: getFilmCaption(film),
+            parse_mode: "HTML",
+            reply_markup: EpisodesKeyboard.getSeasonsKeyboard(film, filmCode),
+        });
+    } catch (error) {
+        if (!error.message?.includes("message is not modified")) {
+            console.error("[Film] handleSeasonsBack error:", error.message);
+        }
     }
 }

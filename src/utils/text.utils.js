@@ -1,9 +1,27 @@
 import { CONFIG } from "../config/index.js";
 import { BRAND } from "../config/branding.js";
 
-export function getFilmCaption(film) {
+/**
+ * Film sarlavhasi.
+ *
+ * @param {object} film
+ * @param {number|null} season - tanlangan fasl. null bo'lsa:
+ *        - fasl 1 ta bo'lsa fasl qatori UMUMAN chiqmaydi ("1-fasl" deyilmaydi)
+ *        - ko'p bo'lsa "Fasllar: N ta" ko'rinadi
+ *        Tanlangan bo'lsa "Fasl: K-fasl". Qolgan ma'lumotlar o'zgarmaydi.
+ */
+export function getFilmCaption(film, season = null) {
+    const seasons = Number(film.seasonsCount) || 1;
+
+    let seasonLine = "";
+    if (season) {
+        seasonLine = `<b>📀 Fasl:</b> ${season}-fasl\n`;
+    } else if (seasons > 1) {
+        seasonLine = `<b>📀 Fasllar:</b> ${seasons} ta\n`;
+    }
+
     return `<b>${film.name}</b>\n\n` +
-        `<blockquote><b>📗 Qismlar:</b> ${film.episodesCount} ta\n` +
+        `<blockquote>${seasonLine}<b>📗 Qismlar:</b> ${film.episodesCount} ta\n` +
         `<b>📅 Chiqarilgan:</b> ${film.year}-yil\n` +
         `<b>🚩 Mamlakat:</b> ${film.country}\n` +
         `<b>🆔 ${BRAND.Item} kodi:</b> ${film.code}\n` +

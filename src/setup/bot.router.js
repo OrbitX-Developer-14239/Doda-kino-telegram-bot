@@ -7,7 +7,7 @@ import { handleHelp } from "../handlers/help.handler.js";
 import { searchByName, searchByCode, cancelSearchHandler } from "../handlers/search.handler.js";
 import { textRouter } from "../handlers/text.router.js";
 import { handlePageChange } from "../handlers/page.handler.js";
-import { handleSendFilm, handleFilmInfo, handleCloseMessage } from "../handlers/film.handler.js";
+import { handleSendFilm, handleFilmInfo, handleCloseMessage, handleSeasonSelect, handleSeasonsBack } from "../handlers/film.handler.js";
 import { handleEpisodeInfo, handleSendEpisode, handleCloseEpisodeMessage } from "../handlers/episode.handler.js";
 import { handleEpisodePageChange } from "../handlers/episodePage.handler.js";
 import { handleFilms, handleAllFilmsPageChange } from "../handlers/filmlist.handler.js";
@@ -97,6 +97,9 @@ export function setupRoutes(bot) {
     bot.callbackQuery(/^all_films_page_(\d+)$/, handleAllFilmsPageChange);
     bot.callbackQuery(/^episode_info_(.+)$/, handleEpisodeInfo);
     bot.callbackQuery(/^episodes_page_(.+)_(\d+)$/, handleEpisodePageChange);
+    // Ko'p faslli seriallar: fasl tanlash va fasllar ro'yxatiga qaytish
+    bot.callbackQuery(/^season_(\d+)_(\d+)$/, handleSeasonSelect);
+    bot.callbackQuery(/^seasons_(\d+)$/, handleSeasonsBack);
 
     bot.callbackQuery(/^(no_prev_page|no_next_page|current_page_status)$/, (ctx) => {
         ctx.answerCallbackQuery().catch(() => { });

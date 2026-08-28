@@ -20,6 +20,9 @@ export function createInitialSession() {
         step_at: 0,
         active_film_id: null,
         active_episode_code: null,
+        // Ko'p faslli serialda foydalanuvchi qaysi faslni ochgani.
+        // null = fasl tanlanmagan (fasllar ro'yxati ko'rsatiladi).
+        active_season: null,
         searchQuery: "",
         page: 1,
         totalPages: 1,
