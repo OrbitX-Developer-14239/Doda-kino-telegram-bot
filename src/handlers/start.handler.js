@@ -2,7 +2,7 @@ import { InputFile } from "grammy";
 import { BRAND } from "../config/branding.js";
 import { KeyboardFactory } from "../keyboards/inline.menus.js";
 import { ApiService } from "../services/api.service.js";
-import { FileIdService } from "../services/fileid.service.js";
+import { FileIdService, brandImage } from "../services/fileid.service.js";
 
 const IMAGE_KEY = "start_photo";
 
@@ -14,7 +14,7 @@ async function replyWithCachedGif(ctx, caption, options) {
         return ctx.replyWithPhoto(cachedGifFileId, fullOptions);
     }
 
-    const msg = await ctx.replyWithPhoto(new InputFile("assets/images/start.png"), fullOptions);
+    const msg = await ctx.replyWithPhoto(new InputFile(brandImage("assets/images/start.png")), fullOptions);
 
     // DIQQAT: photo[] eng KICHIKdan eng KATTAgacha tartiblangan.
     // photo[0] — 90px lik eskiz (~1 KB): uni keshlash keyingi barcha
@@ -63,7 +63,7 @@ export async function handleStart(ctx) {
                 const msg = await ctx.editMessageMedia(
                     {
                         type: "photo",
-                        media: cachedGifFileId || new InputFile("assets/images/start.png"),
+                        media: cachedGifFileId || new InputFile(brandImage("assets/images/start.png")),
                         caption: text,
                         parse_mode: options.parse_mode
                     },

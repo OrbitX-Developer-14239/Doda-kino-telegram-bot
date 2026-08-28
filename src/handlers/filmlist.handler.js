@@ -4,10 +4,10 @@ import { KeyboardFactory } from "../keyboards/inline.menus.js";
 import { InputFile } from "grammy";
 import { FilmsKeyboard } from "../keyboards/films.keyboard.js";
 import { CONFIG } from "../config/index.js";
-import { FileIdService } from "../services/fileid.service.js";
+import { FileIdService, brandImage } from "../services/fileid.service.js";
 
 const IMAGE_KEY = "films_photo";
-const DEFAULT_IMAGE_PATH = "assets/images/films.png";
+const DEFAULT_IMAGE_PATH = brandImage("assets/images/films.png");
 
 async function replyWithCachedImage(ctx, caption, options) {
     const fullOptions = { caption, ...options };

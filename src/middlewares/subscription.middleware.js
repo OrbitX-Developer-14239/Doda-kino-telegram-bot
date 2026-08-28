@@ -3,9 +3,11 @@ import { KeyboardFactory } from "../keyboards/inline.menus.js";
 import { ApiService } from "../services/api.service.js";
 import { SUBSCRIBED_STATUSES, isPrivateBypassUser } from "../config/index.js";
 import { pendingJoinRequests, subscriptionMessageIds } from "../store/memory.store.js";
-import { FileIdService } from "../services/fileid.service.js";
+import { FileIdService, brandImage } from "../services/fileid.service.js";
 
 const WARNING_IMAGE_KEY = "sub_warning_photo";
+// Botga xos rasm bo'lsa o'sha ishlatiladi (icon2-<botId>.png)
+const SUB_IMAGE = brandImage("assets/images/icon2.png");
 
 // User kanaldan chiqsa chat_member event keladi va kesh DARHOL tozalanadi
 // (clearUserSubCache) — shuning uchun OK muddatini uzun qilish xavfsiz.
@@ -73,7 +75,7 @@ async function showSubscriptionWarning(ctx, channels, checkedStatus, missings) {
         if (cachedWarningId) {
             return await ctx.replyWithPhoto(cachedWarningId, options);
         }
-        const msg = await ctx.replyWithPhoto(new InputFile("assets/images/icon2.png"), options);
+        const msg = await ctx.replyWithPhoto(new InputFile(SUB_IMAGE), options);
         // DIQQAT: photo[] eng KICHIKdan eng KATTAgacha tartiblangan.
         // photo[0] — 90px lik eskiz (~1 KB): uni keshlash keyingi barcha
         // foydalanuvchilarga xira rasm yuborilishiga olib kelardi.
@@ -94,7 +96,7 @@ async function showSubscriptionWarning(ctx, channels, checkedStatus, missings) {
                     const edited = await ctx.editMessageMedia(
                         {
                             type: "photo",
-                            media: cachedWarningId || new InputFile("assets/images/icon2.png"),
+                            media: cachedWarningId || new InputFile(SUB_IMAGE),
                             caption: text,
                             parse_mode: options.parse_mode
                         },

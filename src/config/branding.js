@@ -37,6 +37,54 @@ const BRANDS = {
         worldUz: "kinolar olamiga", worldRu: "в мир кино", worldEn: "the world of cinema",
     },
 
+    // ── 4-bot: @mega_filmlar_bot ──
+    // FILMLARI 1-bot bilan UMUMIY (bitta baza), faqat nomi, matnlari va
+    // rasmlari boshqa. Shuning uchun so'zlari ham "film" bo'lib qoladi.
+    "8829216136": {
+        name: "Mega Filmlar",
+        emoji: "🎞",
+        item: "film",
+        Item: "Film",
+        plural: "filmlar",
+        listCommand: "films",
+        startLines: "• Yangi va mashhur filmlar\n• Seriallar to'liq to'plami\n• Yuqori sifatli videolar\n• Sun'iy intellektli qidiruv",
+        searchExamples: `• "Interstellar"\n• "Kemasi cho'kib ketadigan sevgi filmi."\n• "Sehrgarlar maktabidagi bola."\n• "Bosh qahramoni John Wick."`,
+        uz: "kinolarni", ru: "фильмы", en: "movies",
+        worldUz: "kinolar olamiga", worldRu: "в мир кино", worldEn: "the world of cinema",
+
+        // O'Z profil matni — umumiy shablondan emas. Doda Kino bilan
+        // bir xil filmlarni ko'rsatsa ham, tavsifi ataylab boshqacha.
+        profile: {
+            uz:
+                "🎞 Mega Filmlar — kinoning nomini bilmasangiz ham topib beradigan bot.\n\n" +
+                "Nima qila olasiz:\n" +
+                "🔎 Esingizda qolgan sahnani yoki qahramonni tasvirlab yozing — sun'iy intellekt kinoni o'zi aniqlaydi;\n" +
+                "🆔 Kodni bilsangiz bir soniyada oching;\n" +
+                "📚 Seriallarni fasllari bo'yicha tartib bilan ko'ring;\n" +
+                "📥 Yuqori sifatda yuklab oling.\n\n" +
+                "Boshlash uchun pastdagi START tugmasini bosing!",
+            ru:
+                "🎞 Mega Filmlar — бот, который найдёт фильм даже без названия.\n\n" +
+                "Что умеет:\n" +
+                "🔎 Опишите сцену или героя — искусственный интеллект сам определит фильм;\n" +
+                "🆔 Открывайте фильмы по коду за секунду;\n" +
+                "📚 Смотрите сериалы по сезонам, по порядку;\n" +
+                "📥 Скачивайте в высоком качестве.\n\n" +
+                "Нажмите START, чтобы начать!",
+            en:
+                "🎞 Mega Filmlar — the bot that finds a film even without its title.\n\n" +
+                "What it does:\n" +
+                "🔎 Describe a scene or a character — the AI works out which film you mean;\n" +
+                "🆔 Open any film by its code in a second;\n" +
+                "📚 Watch series season by season, in order;\n" +
+                "📥 Download in high quality.\n\n" +
+                "Press START to begin!",
+            shortUz: "🎞 Nomini bilmasangiz ham kinoni topib beradi. Sahnani tasvirlab yozing — qolganini AI qiladi.",
+            shortRu: "🎞 Найдёт фильм по описанию сцены. Не помните название — просто расскажите сюжет.",
+            shortEn: "🎞 Finds any film from a description. Forgot the title? Just tell the plot.",
+        },
+    },
+
     // ── 2-bot: @doda_multik_bot ──
     "8288956451": {
         name: "Doda Multik",
@@ -76,8 +124,12 @@ if (!BRANDS[CONFIG.BOT_ID]) {
 }
 
 /** Telegram profil tavsiflari (setMyDescription) — 3 tilda */
+// Brendda `profile` bo'lsa — o'sha matn, bo'lmasa umumiy shablon.
+// Shu tufayli har bot mutlaqo boshqa tavsifga ega bo'la oladi.
+const P = BRAND.profile || {};
+
 export const PROFILE_TEXTS = {
-    descriptionUz:
+    descriptionUz: P.uz ||
         `👋 Salom! "${BRAND.name}" botiga xush kelibsiz!\n\n` +
         `Bu yerda siz quyidagilarni amalga oshirishingiz mumkin:\n` +
         `🔥 Eng so'nggi va mashhur ${BRAND.uz} topish;\n` +
@@ -85,7 +137,7 @@ export const PROFILE_TEXTS = {
         `🔎 O'zingiz yoqtirgan janrdagi ${BRAND.uz} oson qidirish.\n\n` +
         `🍿 Popkornni tayyorlang va ${BRAND.worldUz} sayohatni boshlash uchun pastdagi START tugmasini bosing!`,
 
-    descriptionRu:
+    descriptionRu: P.ru ||
         `👋 Привет! Добро пожаловать в бота "${BRAND.name}"!\n\n` +
         `Здесь вы можете:\n` +
         `🔥 Найти самые новые и популярные ${BRAND.ru};\n` +
@@ -93,7 +145,7 @@ export const PROFILE_TEXTS = {
         `🔎 Легко искать ${BRAND.ru} по вашим любимым жанрам.\n\n` +
         `🍿 Готовьте попкорн и нажимайте кнопку START ниже, чтобы отправиться ${BRAND.worldRu}!`,
 
-    descriptionEn:
+    descriptionEn: P.en ||
         `👋 Hello! Welcome to the "${BRAND.name}" bot!\n\n` +
         `Here you can:\n` +
         `🔥 Find the latest and most popular ${BRAND.en};\n` +
@@ -101,9 +153,9 @@ export const PROFILE_TEXTS = {
         `🔎 Easily search for ${BRAND.en} in your favorite genres.\n\n` +
         `🍿 Grab your popcorn and press the START button below to enter ${BRAND.worldEn}!`,
 
-    shortUz: `${BRAND.emoji} "${BRAND.name}" - eng sifatli va yangi ${BRAND.uz} tezkor topish uchun qulay bot. ${BRAND.worldUz.charAt(0).toUpperCase() + BRAND.worldUz.slice(1)} xush kelibsiz! 🍿`,
-    shortRu: `${BRAND.emoji} "${BRAND.name}" — удобный бот для поиска новых ${BRAND.ru} в лучшем качестве. Добро пожаловать ${BRAND.worldRu}! 🍿`,
-    shortEn: `${BRAND.emoji} "${BRAND.name}" - a convenient bot to find the latest and top-quality ${BRAND.en}. Welcome to ${BRAND.worldEn}! 🍿`,
+    shortUz: P.shortUz || `${BRAND.emoji} "${BRAND.name}" - eng sifatli va yangi ${BRAND.uz} tezkor topish uchun qulay bot. ${BRAND.worldUz.charAt(0).toUpperCase() + BRAND.worldUz.slice(1)} xush kelibsiz! 🍿`,
+    shortRu: P.shortRu || `${BRAND.emoji} "${BRAND.name}" — удобный бот для поиска новых ${BRAND.ru} в лучшем качестве. Добро пожаловать ${BRAND.worldRu}! 🍿`,
+    shortEn: P.shortEn || `${BRAND.emoji} "${BRAND.name}" - a convenient bot to find the latest and top-quality ${BRAND.en}. Welcome to ${BRAND.worldEn}! 🍿`,
 };
 
 /** Bot buyruqlari tavsiflari (setMyCommands) */

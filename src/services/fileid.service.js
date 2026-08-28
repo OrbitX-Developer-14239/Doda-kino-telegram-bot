@@ -1,4 +1,5 @@
 import { cache } from "./cache.service.js";
+import fsSync from "fs";
 import { CONFIG } from "../config/index.js";
 
 const TTL_SECONDS = 30 * 24 * 60 * 60; // 30 kun
@@ -26,3 +27,20 @@ export const FileIdService = {
         cache.set(`b${CONFIG.BOT_ID}:fileid:${name}`, fileId, TTL_SECONDS);
     },
 };
+
+/**
+ * Botga xos rasm yo'li.
+ *
+ * "assets/images/start.png" berilsa, avval "assets/images/start-<botId>.png"
+ * qidiriladi — bor bo'lsa o'sha ishlatiladi. Shu tufayli bir xil kod bilan
+ * ishlayotgan botlar HAR XIL rasm ko'rsatishi mumkin: yangi bot uchun
+ * rasmlarni shu nom bilan tashlab qo'yish kifoya, kodga tegilmaydi.
+ */
+export function brandImage(defaultPath) {
+    const dot = defaultPath.lastIndexOf(".");
+    const perBot = `${defaultPath.slice(0, dot)}-${CONFIG.BOT_ID}${defaultPath.slice(dot)}`;
+    try {
+        if (fsSync.existsSync(perBot)) return perBot;
+    } catch { /* fayl tizimi xatosi — umumiy rasm ishlatiladi */ }
+    return defaultPath;
+}

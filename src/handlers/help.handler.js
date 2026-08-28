@@ -1,10 +1,10 @@
 import { InputFile } from "grammy";
 import { BRAND } from "../config/branding.js";
 import { KeyboardFactory } from "../keyboards/inline.menus.js";
-import { FileIdService } from "../services/fileid.service.js";
+import { FileIdService, brandImage } from "../services/fileid.service.js";
 
 const IMAGE_KEY = "help_photo";
-const DEFAULT_IMAGE_PATH = "assets/images/info.png";
+const DEFAULT_IMAGE_PATH = brandImage("assets/images/info.png");
 
 async function replyWithCachedImage(ctx, caption, options) {
     const fullOptions = { caption, ...options };

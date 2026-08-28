@@ -1,12 +1,12 @@
 import { InputFile, InlineKeyboard } from "grammy";
 import { cache } from "./cache.service.js";
 import { parseTelegramMediaId } from "../utils/media.utils.js";
-import { FileIdService } from "./fileid.service.js";
+import { FileIdService, brandImage } from "./fileid.service.js";
 
 const HISTORY_TTL_SECONDS = 48 * 60 * 60; // 48 soat
 const MAX_HISTORY_MESSAGES = 50; // Faqat oxirgi 50 ta epizod
 
-const LOCKED_IMAGE_PATH = "assets/images/error.png";
+const LOCKED_IMAGE_PATH = brandImage("assets/images/error.png");
 const LOCKED_IMAGE_KEY = "locked_photo";
 
 // Redis ishlamay qolganda yoki local test uchun zaxira xotira (RAM)
