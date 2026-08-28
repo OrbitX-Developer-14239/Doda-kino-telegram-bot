@@ -1,5 +1,6 @@
 import { InputFile } from "grammy";
 import { BRAND, PROFILE_TEXTS, COMMANDS } from "../config/branding.js";
+import { brandImage } from "../services/fileid.service.js";
 
 /**
  * Bot profili — nom/tavsif/buyruqlar BRENDGA QARAB o'rnatiladi.
@@ -16,7 +17,7 @@ export async function setupBotProfile(bot) {
             // Diqqat: fayl nomi katta "I" bilan — Linux katta-kichikni farqlaydi.
             await bot.api.setMyProfilePhoto({
                 type: "static",
-                photo: new InputFile("assets/images/Icon.png"),
+                photo: new InputFile(brandImage("assets/images/Icon.png")),
             });
 
             await bot.api.setMyDescription(PROFILE_TEXTS.descriptionUz, { language_code: "uz" });

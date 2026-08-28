@@ -43,6 +43,9 @@ const BRANDS = {
     "8829216136": {
         name: "Mega Filmlar",
         emoji: "🎞",
+        // Rasmlar shu papkadan olinadi (assets/images/mega-filmlar/).
+        // Papkada bo'lmagan rasm uchun umumiysi ishlatiladi.
+        imageDir: "mega-filmlar",
         item: "film",
         Item: "Film",
         plural: "filmlar",

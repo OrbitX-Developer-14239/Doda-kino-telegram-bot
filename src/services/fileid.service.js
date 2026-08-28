@@ -1,6 +1,7 @@
 import { cache } from "./cache.service.js";
 import fsSync from "fs";
 import { CONFIG } from "../config/index.js";
+import { BRAND } from "../config/branding.js";
 
 const TTL_SECONDS = 30 * 24 * 60 * 60; // 30 kun
 
@@ -31,16 +32,36 @@ export const FileIdService = {
 /**
  * Botga xos rasm yo'li.
  *
- * "assets/images/start.png" berilsa, avval "assets/images/start-<botId>.png"
- * qidiriladi — bor bo'lsa o'sha ishlatiladi. Shu tufayli bir xil kod bilan
- * ishlayotgan botlar HAR XIL rasm ko'rsatishi mumkin: yangi bot uchun
- * rasmlarni shu nom bilan tashlab qo'yish kifoya, kodga tegilmaydi.
+ * Brendda `imageDir` ko'rsatilgan bo'lsa, avval o'sha papkadan xuddi shu
+ * nomli fayl qidiriladi:
+ *   brandImage("assets/images/start.png")
+ *     -> "assets/images/mega-filmlar/start.png"   (agar bor bo'lsa)
+ *     -> "assets/images/start.png"                (aks holda)
+ *
+ * Shu tufayli bitta kod bilan ishlayotgan botlar butunlay boshqa rasmlar
+ * ko'rsata oladi — yangi bot uchun papka ochib rasmlarni tashlash kifoya.
+ *
+ * Fayl nomi katta-kichik harf bo'yicha ham solishtiriladi: Linux buni
+ * farqlaydi va "Icon.png" / "icon.png" mos kelmay qolardi.
  */
+const IMAGES_ROOT = "assets/images";
+
 export function brandImage(defaultPath) {
-    const dot = defaultPath.lastIndexOf(".");
-    const perBot = `${defaultPath.slice(0, dot)}-${CONFIG.BOT_ID}${defaultPath.slice(dot)}`;
+    const dir = BRAND.imageDir;
+    if (!dir) return defaultPath;
+
+    const fileName = defaultPath.split("/").pop();
+    const folder = `${IMAGES_ROOT}/${dir}`;
+
     try {
-        if (fsSync.existsSync(perBot)) return perBot;
-    } catch { /* fayl tizimi xatosi — umumiy rasm ishlatiladi */ }
+        const exact = `${folder}/${fileName}`;
+        if (fsSync.existsSync(exact)) return exact;
+
+        // Katta-kichik harf farq qilsa ham topamiz
+        const lower = fileName.toLowerCase();
+        const found = fsSync.readdirSync(folder).find((f) => f.toLowerCase() === lower);
+        if (found) return `${folder}/${found}`;
+    } catch { /* papka yo'q yoki o'qib bo'lmadi — umumiy rasm ishlatiladi */ }
+
     return defaultPath;
 }
