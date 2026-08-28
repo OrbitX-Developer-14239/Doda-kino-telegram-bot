@@ -1,2 +1,5 @@
 node_modules
 .env
+# Vaqtinchalik patch skriptlari repoga tushmasin
+*.mjs
+!src/**/*.mjs
