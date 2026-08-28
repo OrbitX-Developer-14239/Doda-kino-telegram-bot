@@ -23,6 +23,9 @@ const BRANDS = {
     "8887969510": {
         name: "Doda Kino",
         emoji: "🎬",
+        // Rasmlar: assets/images/doda-kino/
+        // (o'z papkasi yo'q botlar ham shu papkadan oladi)
+        imageDir: "doda-kino",
         item: "film",          // "film topilmadi"
         Item: "Film",          // "Film kodi"
         plural: "filmlar",     // "filmlar ro'yxati"

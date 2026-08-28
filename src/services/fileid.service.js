@@ -32,27 +32,27 @@ export const FileIdService = {
 /**
  * Botga xos rasm yo'li.
  *
- * Brendda `imageDir` ko'rsatilgan bo'lsa, avval o'sha papkadan xuddi shu
- * nomli fayl qidiriladi:
+ * Har bot rasmlari O'Z PAPKASIDA turadi (brenddagi `imageDir`):
  *   brandImage("assets/images/start.png")
- *     -> "assets/images/mega-filmlar/start.png"   (agar bor bo'lsa)
- *     -> "assets/images/start.png"                (aks holda)
+ *     -> "assets/images/mega-filmlar/start.png"   Mega Filmlar uchun
+ *     -> "assets/images/doda-kino/start.png"      papkasi yo'q botlar uchun
  *
  * Shu tufayli bitta kod bilan ishlayotgan botlar butunlay boshqa rasmlar
- * ko'rsata oladi — yangi bot uchun papka ochib rasmlarni tashlash kifoya.
+ * ko'rsata oladi — yangi bot uchun papka ochib rasmlarni tashlash va
+ * brendga `imageDir` yozish kifoya.
+ *
+ * O'Z papkasi bo'lmagan (yoki papkasida shu rasm yo'q) bot DEFAULT_DIR dan
+ * oladi — hozircha multik va anime botlar shunday ishlaydi, ular uchun
+ * alohida rasmlar tayyor bo'lganda faqat `imageDir` qo'shiladi.
  *
  * Fayl nomi katta-kichik harf bo'yicha ham solishtiriladi: Linux buni
  * farqlaydi va "Icon.png" / "icon.png" mos kelmay qolardi.
  */
 const IMAGES_ROOT = "assets/images";
+const DEFAULT_DIR = "doda-kino";
 
-export function brandImage(defaultPath) {
-    const dir = BRAND.imageDir;
-    if (!dir) return defaultPath;
-
-    const fileName = defaultPath.split("/").pop();
+const lookIn = (dir, fileName) => {
     const folder = `${IMAGES_ROOT}/${dir}`;
-
     try {
         const exact = `${folder}/${fileName}`;
         if (fsSync.existsSync(exact)) return exact;
@@ -61,7 +61,18 @@ export function brandImage(defaultPath) {
         const lower = fileName.toLowerCase();
         const found = fsSync.readdirSync(folder).find((f) => f.toLowerCase() === lower);
         if (found) return `${folder}/${found}`;
-    } catch { /* papka yo'q yoki o'qib bo'lmadi — umumiy rasm ishlatiladi */ }
+    } catch { /* papka yo'q yoki o'qib bo'lmadi */ }
+    return null;
+};
+
+export function brandImage(defaultPath) {
+    const fileName = defaultPath.split("/").pop();
+
+    for (const dir of [BRAND.imageDir, DEFAULT_DIR]) {
+        if (!dir) continue;
+        const found = lookIn(dir, fileName);
+        if (found) return found;
+    }
 
     return defaultPath;
 }
