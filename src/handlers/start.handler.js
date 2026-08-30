@@ -23,19 +23,37 @@ async function replyWithCachedGif(ctx, caption, options) {
         FileIdService.set(IMAGE_KEY, msg.photo[msg.photo.length - 1].file_id);
     }
 
-    if (!ctx.session.is_registered) {
-        ApiService.createUser({
-            telegram_id: ctx.from.id,
-            username: ctx.from.username,
-            first_name: ctx.from.first_name,
-        }).catch(error => console.error("[Start] createUser error:", error.message));
-        ctx.session.is_registered = true;
-    }
-
     return msg;
 }
 
+/**
+ * Foydalanuvchini bazaga yozadi.
+ *
+ * DIQQAT — bu ATAYLAB rasm yuborish mantiqidan TASHQARIDA turadi.
+ * Ilgari u `replyWithCachedGif` ichida, rasm keshi bo'sh bo'lgan
+ * tarmoqda edi: kesh to'lgach (ya'ni birinchi foydalanuvchidan keyin)
+ * funksiya undan OLDIN return qilardi va hech kim yozilmasdi.
+ *
+ * Majburiy kanali bor botlarda buni obuna middleware'i yashirib turardi
+ * (u ham foydalanuvchini yozadi), kanalsiz botda esa bitta foydalanuvchi
+ * qolib ketardi.
+ *
+ * Har /start da chaqiriladi: backend tomonda bu upsert, ya'ni takrori
+ * zararsiz. Yon foydasi — ism/username o'zgargani ham yangilanib turadi.
+ */
+function registerUser(ctx) {
+    if (!ctx.from?.id) return;
+
+    ApiService.createUser({
+        telegram_id: ctx.from.id,
+        username: ctx.from.username,
+        first_name: ctx.from.first_name,
+    }).catch((error) => console.error("[Start] createUser error:", error.message));
+}
+
 export async function handleStart(ctx) {
+    registerUser(ctx);
+
     ctx.session.step = "idle";
     const welcomeKeyboard = KeyboardFactory.createHomeMenu();
 
