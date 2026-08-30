@@ -91,18 +91,51 @@ const BRANDS = {
         },
     },
 
-    // ── 2-bot: @doda_multik_bot ──
-    "8288956451": {
-        name: "Doda Multik",
+    // ── 2-bot: @asil_multfilm_bot ──
+    "8667982884": {
+        name: "Asil Multfilm",
         emoji: "🧸",
         item: "multfilm",
         Item: "Multfilm",
         plural: "multfilmlar",
         listCommand: "cartoons",
-        startLines: "• Eng yangi multfilmlar\n• Mashhur multseriallar\n• Yuqori sifatli videolar\n• Qulay va tezkor qidiruv",
-        searchExamples: `• "Muzlik davri"\n• "O'yinchoqlar jonlanib qoladigan multfilm."\n• "Yashil dev va gapiradigan eshak sarguzashtlari."\n• "Sehrli muzlatadigan malika haqida."`,
+        // Rasmlar: assets/images/asil-multfilm/
+        imageDir: "asil-multfilm",
+        startLines: "• Eng sara multfilmlar\n• Mashhur multseriallar\n• Bolalar uchun xavfsiz kontent\n• Yuqori sifatli videolar",
+        searchExamples: `• "Muzlik davri"\n• "O'yinchoqlar jonlanib qoladigan multfilm."\n• "Yashil dev va gapiradigan eshak sarguzashtlari."\n• "Muzlatib yuboradigan sehrli malika haqida."`,
         uz: "multfilmlarni", ru: "мультфильмы", en: "cartoons",
         worldUz: "multfilmlar olamiga", worldRu: "в мир мультфильмов", worldEn: "the world of cartoons",
+
+        // O'Z profil matni — umumiy shablondan emas.
+        profile: {
+            uz:
+                "🧸 Asil Multfilm — bolalar uchun sara multfilmlar to'plami.\n\n" +
+                "Nima qila olasiz:\n" +
+                "🔎 Nomini eslay olmasangiz — syujetini yoki qahramonini tasvirlab yozing, sun'iy intellekt topib beradi;\n" +
+                "🆔 Kod orqali bir soniyada oching;\n" +
+                "📚 Multseriallarni fasllari bo'yicha tartib bilan ko'ring;\n" +
+                "📥 Yuqori sifatda yuklab oling.\n\n" +
+                "Boshlash uchun pastdagi START tugmasini bosing!",
+            ru:
+                "🧸 Asil Multfilm — коллекция лучших мультфильмов для детей.\n\n" +
+                "Что умеет:\n" +
+                "🔎 Не помните название? Опишите сюжет или героя — искусственный интеллект найдёт сам;\n" +
+                "🆔 Открывайте мультфильмы по коду за секунду;\n" +
+                "📚 Смотрите мультсериалы по сезонам, по порядку;\n" +
+                "📥 Скачивайте в высоком качестве.\n\n" +
+                "Нажмите START, чтобы начать!",
+            en:
+                "🧸 Asil Multfilm — a hand-picked collection of cartoons for kids.\n\n" +
+                "What it does:\n" +
+                "🔎 Forgot the title? Describe the plot or a character — the AI finds it for you;\n" +
+                "🆔 Open any cartoon by its code in a second;\n" +
+                "📚 Watch cartoon series season by season, in order;\n" +
+                "📥 Download in high quality.\n\n" +
+                "Press START to begin!",
+            shortUz: "🧸 Bolalar uchun sara multfilmlar. Nomini bilmasangiz — syujetini yozing, AI topib beradi.",
+            shortRu: "🧸 Лучшие мультфильмы для детей. Не помните название — опишите сюжет, AI найдёт.",
+            shortEn: "🧸 Hand-picked cartoons for kids. Forgot the title? Describe the plot and the AI finds it.",
+        },
     },
 
     // ── 3-bot: @doda_anime_bot ──
