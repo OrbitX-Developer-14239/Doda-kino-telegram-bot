@@ -34,8 +34,15 @@ if (!CONFIG.BOT_TOKEN) {
     throw new Error("CRITICAL: BOT_TOKEN is missing in environment variables!");
 }
 
+// CHANNEL_ID ATAYLAB majburiy emas.
+//
+// Ilgari media yuklashni bot o'zi qilardi va kanalsiz ishlay olmasdi.
+// Endi buni backend bajaradi, filmlar esa kanal ID sini o'z ichida
+// saqlaydi ({channelId, msgId}) — ya'ni bot bu qiymatsiz ham to'liq
+// ishlaydi. Yangi ochilgan botda kanal hali bo'lmasligi mumkin, shu
+// sababli bu yerda "throw" o'rniga ogohlantirish qoldirildi.
 if (!CONFIG.CHANNEL_ID) {
-    throw new Error("CRITICAL: CHANNEL_ID is missing in environment variables!");
+    console.warn("[Config] CHANNEL_ID berilmagan — media kanali sozlanmagan (bot baribir ishlaydi).");
 }
 
 export const SUBSCRIBED_STATUSES = ["member", "administrator", "creator"];
