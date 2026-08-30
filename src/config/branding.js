@@ -138,6 +138,55 @@ const BRANDS = {
         },
     },
 
+    // ── 5-bot: @sara_multik_bot ──
+    // MULTFILMLARI @asil_multfilm_bot bilan UMUMIY (bitta baza),
+    // faqat nomi, matnlari va rasmlari boshqa.
+    "8887464244": {
+        name: "Sara Multik",
+        emoji: "🧸",
+        item: "multfilm",
+        Item: "Multfilm",
+        plural: "multfilmlar",
+        listCommand: "cartoons",
+        // Rasmlar: assets/images/sara-multik/
+        imageDir: "sara-multik",
+        startLines: "• Sevimli multfilmlar\n• Uzun multseriallar\n• Oilaviy tomosha uchun\n• Yuqori sifatli videolar",
+        searchExamples: `• "Shrek"\n• "Robot bola kosmosda sayohat qiladi."\n• "Arslon bolasining o'sishi haqida."\n• "Dengiz ostidagi baliqchani qidirish."`,
+        uz: "multfilmlarni", ru: "мультфильмы", en: "cartoons",
+        worldUz: "multfilmlar olamiga", worldRu: "в мир мультфильмов", worldEn: "the world of cartoons",
+
+        // O'Z profil matni — umumiy shablondan emas.
+        profile: {
+            uz:
+                "🧸 Sara Multik — butun oila uchun multfilmlar.\n\n" +
+                "Nima qila olasiz:\n" +
+                "🔎 Nomi esdan chiqdimi? Voqeasini yoki qahramonini yozing — sun'iy intellekt topib beradi;\n" +
+                "🆔 Kod orqali darhol oching;\n" +
+                "📚 Multseriallarni fasllari bilan boshidan ko'ring;\n" +
+                "📥 Yuqori sifatda yuklab oling.\n\n" +
+                "Boshlash uchun pastdagi START tugmasini bosing!",
+            ru:
+                "🧸 Sara Multik — мультфильмы для всей семьи.\n\n" +
+                "Что умеет:\n" +
+                "🔎 Забыли название? Расскажите сюжет или героя — искусственный интеллект найдёт;\n" +
+                "🆔 Открывайте по коду мгновенно;\n" +
+                "📚 Смотрите мультсериалы с первой серии, по сезонам;\n" +
+                "📥 Скачивайте в высоком качестве.\n\n" +
+                "Нажмите START, чтобы начать!",
+            en:
+                "🧸 Sara Multik — cartoons for the whole family.\n\n" +
+                "What it does:\n" +
+                "🔎 Forgot the title? Tell the story or a character — the AI will find it;\n" +
+                "🆔 Open anything instantly by its code;\n" +
+                "📚 Watch cartoon series from episode one, season by season;\n" +
+                "📥 Download in high quality.\n\n" +
+                "Press START to begin!",
+            shortUz: "🧸 Butun oila uchun multfilmlar. Nomi esdan chiqsa — voqeasini yozing, AI topadi.",
+            shortRu: "🧸 Мультфильмы для всей семьи. Забыли название — расскажите сюжет, AI найдёт.",
+            shortEn: "🧸 Cartoons for the whole family. Forgot the title? Tell the story, the AI finds it.",
+        },
+    },
+
     // ── 3-bot: @doda_anime_bot ──
     "8873652399": {
         name: "Doda Anime",
