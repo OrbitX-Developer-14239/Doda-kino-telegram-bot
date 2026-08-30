@@ -19,6 +19,16 @@ const apiClient = axios.create({
     httpsAgent: new https.Agent({ keepAlive: true }),
 });
 
+// Global (botga bog'liq bo'lmagan) yo'llar uchun — masalan /broadcast.
+// apiClient dan farqi: URL da /<BOT_ID> prefiksi yo'q.
+const rootClient = axios.create({
+    baseURL: `${CONFIG.API_URL}/api`,
+    timeout: CONFIG.API_TIMEOUT_MS,
+    headers: { "x-bot-token": CONFIG.BOT_TOKEN },
+    httpAgent: new http.Agent({ keepAlive: true }),
+    httpsAgent: new https.Agent({ keepAlive: true }),
+});
+
 let _channelsCache = null;
 let _channelsCacheTime = 0;
 const CHANNELS_MEM_TTL = 30 * 1000;
@@ -204,6 +214,30 @@ export const ApiService = {
         }
     },
 
+
+    /**
+     * Reklama yuborish mumkin bo'lgan botlar (foydalanuvchi soni bilan).
+     * ATAYLAB bot prefiksisiz yo'l: tarqatma bir nechta botni qamraydi.
+     */
+    async getBroadcastTargets() {
+        try {
+            const response = await rootClient.get("/broadcast/targets");
+            return response.data?.data || [];
+        } catch (error) {
+            console.error("[API] getBroadcastTargets error:", error.message);
+            return [];
+        }
+    },
+
+    async createBroadcast(payload) {
+        try {
+            const response = await rootClient.post("/broadcast", payload);
+            return response.data?.data || null;
+        } catch (error) {
+            console.error("[API] createBroadcast error:", error.message);
+            return null;
+        }
+    },
 
     async createUser(user) {
         try {

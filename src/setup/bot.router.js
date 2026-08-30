@@ -1,4 +1,8 @@
 import { handleChatJoinRequest } from "../handlers/chatJoinRequest.handler.js";
+import {
+    handleAdChannelPost, handleAdYes, handleAdNo, handleAdBotToggle,
+    handleAdNext, handleAdConfirm, handleAdCancel,
+} from "../handlers/broadcast.handler.js";
 import { BRAND } from "../config/branding.js";
 import { handleChatMember } from "../handlers/chatMember.handler.js";
 import { handleMyChatMember } from "../handlers/myChatMember.handler.js";
@@ -100,6 +104,15 @@ export function setupRoutes(bot) {
     // Ko'p faslli seriallar: fasl tanlash va fasllar ro'yxatiga qaytish
     bot.callbackQuery(/^season_(\d+)_(\d+)$/, handleSeasonSelect);
     bot.callbackQuery(/^seasons_(\d+)$/, handleSeasonsBack);
+
+    // ── Reklama tarqatish (faqat reklama kanalida ishlaydi) ──
+    bot.on("channel_post", handleAdChannelPost);
+    bot.callbackQuery(/^ad_yes_(\d+)$/, handleAdYes);
+    bot.callbackQuery(/^ad_no_(\d+)$/, handleAdNo);
+    bot.callbackQuery(/^ad_bot_(\d+)$/, handleAdBotToggle);
+    bot.callbackQuery("ad_next", handleAdNext);
+    bot.callbackQuery("ad_confirm", handleAdConfirm);
+    bot.callbackQuery("ad_cancel", handleAdCancel);
 
     bot.callbackQuery(/^(no_prev_page|no_next_page|current_page_status)$/, (ctx) => {
         ctx.answerCallbackQuery().catch(() => { });

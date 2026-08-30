@@ -1,7 +1,7 @@
 import { InputFile } from "grammy";
 import { KeyboardFactory } from "../keyboards/inline.menus.js";
 import { ApiService } from "../services/api.service.js";
-import { SUBSCRIBED_STATUSES, isPrivateBypassUser } from "../config/index.js";
+import { CONFIG, SUBSCRIBED_STATUSES, isPrivateBypassUser } from "../config/index.js";
 import { pendingJoinRequests, subscriptionMessageIds } from "../store/memory.store.js";
 import { FileIdService, brandImage } from "../services/fileid.service.js";
 
@@ -142,6 +142,12 @@ export async function subscriptionMiddleware(ctx, next) {
     // my_chat_member ham shu yerda: u kanaldan keladi, quyidagi "private emas"
     // sharti uni next() siz to'xtatib qo'yardi — natijada handler ishlamasdi.
     if (ctx.update.chat_join_request || ctx.update.chat_member || ctx.update.my_chat_member) {
+        return next();
+    }
+
+    // Reklama kanali: u yerdagi postlar va tugmalar broadcast oqimiga
+    // tegishli — kanal administratoridan obuna talab qilish ma'nosiz.
+    if (CONFIG.AD_CHANNEL_ID && String(ctx.chat?.id) === String(CONFIG.AD_CHANNEL_ID)) {
         return next();
     }
 

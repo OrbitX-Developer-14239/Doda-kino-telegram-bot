@@ -10,6 +10,11 @@ export const CONFIG = {
     API_URL: process.env.API_URL,
     CHANNEL_ID: process.env.CHANNEL_ID,
     DUMP_CHANNEL: process.env.DUMP_CHANNEL,
+
+    // Reklama kanali: admin shu yerga post tashlaydi, bot esa uni
+    // foydalanuvchilarga tarqatishni taklif qiladi. Berilmasa reklama
+    // oqimi butunlay o'chadi (bot boshqa ishlarini bajaraveradi).
+    AD_CHANNEL_ID: process.env.AD_CHANNEL_ID || null,
     ITEMS_PER_PAGE: 12,
     REDIS_URL: process.env.REDIS_URL || "redis://127.0.0.1:6379",
 

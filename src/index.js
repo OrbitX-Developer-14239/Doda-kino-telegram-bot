@@ -22,7 +22,12 @@ const bot = new Bot(CONFIG.BOT_TOKEN);
 // Telegram 429 (flood wait) qaytarsa avtomatik kutib qayta urinadi
 bot.api.config.use(autoRetry({ maxRetryAttempts: 2, maxDelaySeconds: 5 }));
 
-// Guruh va kanallardagi xabar/tugmalarga javob bermaslik
+// Guruh va kanallardagi xabar/tugmalarga javob bermaslik.
+// ISTISNO: reklama kanali — u yerdagi postlar va tugmalar broadcast
+// oqimini yuritadi, shuning uchun o'tkazib yuboriladi.
+const isAdChannel = (ctx) =>
+  CONFIG.AD_CHANNEL_ID && String(ctx.chat?.id) === String(CONFIG.AD_CHANNEL_ID);
+
 bot.use(async (ctx, next) => {
   if (
     ctx.update.message ||
@@ -30,7 +35,7 @@ bot.use(async (ctx, next) => {
     ctx.update.channel_post ||
     ctx.update.edited_channel_post
   ) {
-    if (ctx.chat?.type !== "private") {
+    if (ctx.chat?.type !== "private" && !isAdChannel(ctx)) {
       return;
     }
   }
@@ -99,7 +104,8 @@ const me = bot.botInfo;
 // Telegram bu turdagi yangilanishni faqat shu ro'yxatda bo'lsagina yuboradi.
 // Usiz bot o'zi qaysi kanallarda borligini umuman bila olmaydi (Bot API da
 // "chatlar ro'yxati" metodi yo'q), shuning uchun panel ro'yxati ham bo'sh qolardi.
-const ALLOWED_UPDATES = ["message", "callback_query", "chat_member", "my_chat_member", "chat_join_request"];
+// channel_post — reklama kanalidagi postlarni ko'rish uchun (broadcast oqimi)
+const ALLOWED_UPDATES = ["message", "callback_query", "chat_member", "my_chat_member", "chat_join_request", "channel_post"];
 
 // Webhook URL'ini bilgan begonalar soxta update yubora olmasligi uchun
 const WEBHOOK_SECRET = crypto
