@@ -260,7 +260,8 @@ export async function subscriptionMiddleware(ctx, next) {
             })
         }
         // Fire-and-forget — kutmasdan jo'natamiz
-        ApiService.updateUser(userId, data, ctx.from.first_name, ctx.from.username);
+        // true — bu yerga faqat bot bilan MULOQOT qilgan odam yetib keladi
+        ApiService.updateUser(userId, data, ctx.from.first_name, ctx.from.username, true);
     }
 
     if (hasMissing) {

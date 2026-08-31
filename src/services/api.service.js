@@ -249,9 +249,17 @@ export const ApiService = {
         }
     },
 
-    async updateUser(telegram_id, channels_condition, first_name, username) {
+    /**
+     * @param {boolean} started - odam botga O'ZI yozganmi.
+     *   true  -> bot bilan muloqot (obuna tekshiruvi)
+     *   false -> kanalga qo'shilish hodisasi; bunday odamga bot yoza olmaydi,
+     *            shuning uchun started belgisi QO'YILMAYDI.
+     */
+    async updateUser(telegram_id, channels_condition, first_name, username, started = false) {
         try {
-            const response = await apiClient.put("/user", { telegram_id, channels_condition, first_name, username });
+            const body = { telegram_id, channels_condition, first_name, username };
+            if (started) body.started = true;
+            const response = await apiClient.put("/user", body);
             return response.data;
         } catch (error) {
             console.error("[API] updateUser error:", error.message);
