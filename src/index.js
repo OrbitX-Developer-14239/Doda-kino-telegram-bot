@@ -9,6 +9,7 @@ import { CONFIG } from "./config/index.js";
 import { cache } from "./services/cache.service.js";
 import { sessionMiddleware } from "./core/context.js";
 import { subscriptionMiddleware } from "./middlewares/subscription.middleware.js";
+import { registerMiddleware } from "./middlewares/register.middleware.js";
 import { stepExpiryMiddleware } from "./middlewares/step.middleware.js";
 import { setupBotProfile } from "./setup/bot.profile.js";
 import { setupRoutes } from "./setup/bot.router.js";
@@ -79,6 +80,9 @@ bot.use(sequentialize((ctx) => ctx.from?.id?.toString() ?? ctx.chat?.id?.toStrin
 bot.use(hydrate());
 bot.use(sessionMiddleware);
 bot.use(stepExpiryMiddleware);
+// Obuna tekshiruvidan OLDIN: obunasi to'liq bo'lmagan odam ham
+// bizning foydalanuvchimiz — u ham bazaga tushishi kerak
+bot.use(registerMiddleware);
 bot.use(subscriptionMiddleware);
 
 setupRoutes(bot);
