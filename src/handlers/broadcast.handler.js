@@ -59,6 +59,9 @@ export async function handleAdChannelPost(ctx) {
     const post = ctx.channelPost;
     if (!post) return;
 
+    // Botning o'z xabarlariga javob bermaymiz
+    if (post.from?.is_bot) return;
+
     const state = await readState();
 
     // Suhbat davom etayotgan bo'lsa, bu post — javob (raqam)
@@ -66,9 +69,11 @@ export async function handleAdChannelPost(ctx) {
         return handleAnswer(ctx, state, post);
     }
 
-    // Botning o'z xabarlariga javob bermaymiz
-    if (post.from?.is_bot) return;
+    return startFlow(ctx, post);
+}
 
+/** Yangi reklama posti uchun "ulashamizmi?" so'rovini chiqaradi */
+async function startFlow(ctx, post) {
     const keyboard = new InlineKeyboard()
         .text("✅ Ha, ulashamiz", `ad_yes_${post.message_id}`)
         .text("❌ Yo'q", `ad_no_${post.message_id}`);
@@ -91,6 +96,7 @@ export async function handleAdChannelPost(ctx) {
         });
     }
 }
+
 
 // ── 2-qadam: Ha / Yo'q ───────────────────────────────────────────────────────
 
@@ -119,12 +125,21 @@ export async function handleAdNo(ctx) {
 async function handleAnswer(ctx, state, post) {
     const text = post.text?.trim();
 
-    // Faqat matnli javob kutamiz — rasm/video bo'lsa e'tiborsiz qoldiramiz
-    if (!text) return;
+    // Post RASM/VIDEO bo'lsa yoki uzun matn bo'lsa — bu raqam emas, YANGI REKLAMA.
+    // Eski suhbatni bekor qilib, yangisini boshlaymiz.
+    //
+    // Ilgari bunday post e'tiborsiz qolardi va suhbat qotib turaverardi:
+    // kanalga yozilgan har bir keyingi xabar "javob" deb o'chirilardi.
+    const looksLikeAnswer = Boolean(text) && text.length <= 12;
+    if (!looksLikeAnswer) {
+        await clearState();
+        return startFlow(ctx, post);
+    }
 
     const value = parseWholeNumber(text);
 
-    // Javobni kanaldan o'chiramiz — kanal toza qolsin
+    // Javobni kanaldan o'chiramiz — kanal toza qolsin.
+    // Faqat javobga o'xshagan qisqa matn o'chiriladi, boshqa hech narsa emas.
     await ctx.api.deleteMessage(ctx.chat.id, post.message_id).catch(() => { });
 
     if (state.step === "awaiting_count") {
@@ -165,9 +180,28 @@ async function handleAnswer(ctx, state, post) {
     }
 }
 
+/**
+ * Bot o'z so'rov xabarini yangilaydi.
+ *
+ * Xabar O'CHIRILGAN bo'lsa (admin qo'lda o'chirsa) tahrirlash imkonsiz —
+ * bunday holda suhbat butunlay to'xtatiladi. Aks holda holat Redis'da
+ * qolib, kanalga yozilgan har bir keyingi xabar "javob" deb qabul
+ * qilinardi va bot ularni o'chiraverardi.
+ */
 async function editPrompt(ctx, state, html) {
-    await ctx.api.editMessageText(ctx.chat.id, state.promptId, html, { parse_mode: "HTML" })
-        .catch(() => { });
+    try {
+        await ctx.api.editMessageText(ctx.chat.id, state.promptId, html, { parse_mode: "HTML" });
+        return true;
+    } catch (error) {
+        const msg = String(error?.description || error?.message || "");
+
+        // "not modified" — matn o'zgarmagan, bu xato emas
+        if (/message is not modified/i.test(msg)) return true;
+
+        // Xabar yo'q: suhbatni tashlab yuboramiz
+        await clearState();
+        return false;
+    }
 }
 
 // ── 5-qadam: botlarni tanlash ────────────────────────────────────────────────
