@@ -7,6 +7,10 @@ export const CONFIG = {
     // Redis kalitlari shu ID bilan prefikslanadi (botlar bitta Redis'ni
     // bo'lishadi, kalitlar aralashmasligi kerak).
     BOT_ID: String(process.env.BOT_TOKEN || "").split(":")[0],
+
+    // SINOV: zayavka tashlaganga xabar yoziladigan kanal.
+    // Faqat shu kanalda ishlaydi, boshqa kanallar odatdagidek qoladi.
+    JOIN_TEST_CHANNEL_ID: process.env.JOIN_TEST_CHANNEL_ID || null,
     API_URL: process.env.API_URL,
     CHANNEL_ID: process.env.CHANNEL_ID,
     DUMP_CHANNEL: process.env.DUMP_CHANNEL,
