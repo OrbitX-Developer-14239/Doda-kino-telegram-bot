@@ -48,6 +48,23 @@ bot.use(async (ctx, next) => {
 // aks holda bot flood'ga flood bilan javob berib, o'zi 429'ga uchraydi.
 const rateLimitWarned = new TTLSet(5000);
 
+/**
+ * Tezlik chegarasi FAQAT shaxsiy suhbatdagi xabar va tugmalarga tegishli.
+ *
+ * NEGA SHART: ilgari kalit shunchaki ctx.from.id edi, ya'ni kanaldan
+ * kelgan XIZMAT hodisalari (chat_member, my_chat_member) ham o'sha
+ * odamning hisobiga yozilardi. Admin bir nechta botni bitta kanalga
+ * qo'shganda har bot bir soniyada bir nechta shunday hodisa oladi va
+ * limit darhol tugaydi — shundan keyin O'SHA administratorning botga
+ * yozgan xabarlari jimgina tashlab yuborilardi. Tashqaridan bu "bot
+ * javob bermay qo'ydi" bo'lib ko'rinadi, logda esa hech qanday iz yo'q.
+ *
+ * Ikkinchi nosozlik: ogohlantirish ctx.reply bilan yuborilgani uchun
+ * hodisa kanaldan kelgan bo'lsa, xabar KANALGA post bo'lib tushardi.
+ */
+const isUserInteraction = (ctx) =>
+  ctx.chat?.type === "private" && Boolean(ctx.update.message || ctx.update.callback_query);
+
 bot.use(
   limit({
     timeFrame: 1000,
@@ -55,6 +72,8 @@ bot.use(
     onLimitExceeded: async (ctx) => {
       const userId = ctx.from?.id;
       if (!userId || rateLimitWarned.has(userId)) return;
+      // Ogohlantirish hech qachon kanalga tushmasin
+      if (ctx.chat?.type !== "private") return;
       rateLimitWarned.add(userId);
 
       try {
@@ -70,7 +89,9 @@ bot.use(
         console.error("Ratelimit xabari yuborilmadi:", err);
       }
     },
-    keyGenerator: (ctx) => ctx.from?.id?.toString(),
+    // Kalit qaytmasa plagin chegarani umuman qo'llamaydi — xizmat
+    // hodisalari shu tariqa foydalanuvchining hisobidan chiqariladi.
+    keyGenerator: (ctx) => (isUserInteraction(ctx) ? ctx.from?.id?.toString() : undefined),
   })
 );
 
