@@ -11,13 +11,17 @@ import { parseTelegramMediaId, getOrExtractFileId } from "../utils/media.utils.j
 import { handleUnknownCommand } from "./unknownCommand.handler.js";
 import { HistoryService } from "../services/history.service.js";
 
-import { FileIdService } from "../services/fileid.service.js";
+import { FileIdService, brandImage } from "../services/fileid.service.js";
 
 const NAME_SEARCH_KEY = "name_search_photo";
 const CODE_SEARCH_KEY = "code_search_photo";
 
-const NAME_SEARCH_IMAGE_PATH = "assets/images/name-search.png";
-const CODE_SEARCH_IMAGE_PATH = "assets/images/code-search.png";
+// Rasmlar HAR DOIM brandImage orqali: bot o'z papkasidan oladi.
+// Ilgari bu yerda to'g'ridan-to'g'ri yo'l turardi — rasmlar papkalarga
+// ko'chirilgach ildizda fayl qolmadi va file_id keshi bo'sh har bir botda
+// /search, /code jimgina osilib qolardi (na javob, na xato).
+const NAME_SEARCH_IMAGE_PATH = brandImage("assets/images/name-search.png");
+const CODE_SEARCH_IMAGE_PATH = brandImage("assets/images/code-search.png");
 
 export async function searchByName(ctx) {
     ctx.session.step = "search_by_name";

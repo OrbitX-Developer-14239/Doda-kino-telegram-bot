@@ -74,5 +74,11 @@ export function brandImage(defaultPath) {
         if (found) return found;
     }
 
-    return defaultPath;
+    // Mavjud bo'lmagan yo'lni qaytarish MUMKIN EMAS: grammY yo'q faylni
+    // yuklashga urinsa so'rov na tugaydi, na xato beradi — foydalanuvchi
+    // navbati abadiy qotib qoladi. Bunday sozlash xatosi darhol, aniq
+    // matn bilan ko'rinishi kerak.
+    throw new Error(
+        `[Rasm] "${fileName}" topilmadi: na ${IMAGES_ROOT}/${BRAND.imageDir || "-"}/ da, na ${IMAGES_ROOT}/${DEFAULT_DIR}/ da`
+    );
 }
