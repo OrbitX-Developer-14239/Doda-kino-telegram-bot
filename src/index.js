@@ -18,7 +18,20 @@ import { TTLSet } from "./store/memory.store.js";
 
 await cache.connect();
 
-const bot = new Bot(CONFIG.BOT_TOKEN);
+/**
+ * Telegram API so'rovi uchun MUDDAT.
+ *
+ * grammY ning o'z qiymati 500 soniya — ya'ni tarmoq tiqilib qolsa bitta
+ * so'rov ~8 daqiqa osilib turadi. Quyidagi sequentialize esa bitta
+ * foydalanuvchining update'larini QAT'IY navbat bilan qayta ishlaydi:
+ * osilgan so'rov o'sha odamning keyingi hamma xabarini bloklaydi. Natijada
+ * bot "aynan shu odam uchun o'lgandek" bo'ladi — xato ham, javob ham yo'q,
+ * logda hech qanday iz qolmaydi (@aniflag_bot da aynan shunday bo'lgan).
+ *
+ * 60 soniya kichik rasm yuklash uchun yetarli, lekin osilgan so'rovni
+ * tezda uzadi va navbat harakatga keladi.
+ */
+const bot = new Bot(CONFIG.BOT_TOKEN, { client: { timeoutSeconds: 60 } });
 
 // Telegram 429 (flood wait) qaytarsa avtomatik kutib qayta urinadi
 bot.api.config.use(autoRetry({ maxRetryAttempts: 2, maxDelaySeconds: 5 }));
