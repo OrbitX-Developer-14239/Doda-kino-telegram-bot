@@ -235,6 +235,54 @@ const BRANDS = {
             shortEn: "🌸 Finds anime from a description. Forgot the title? Just tell the story.",
         },
     },
+    // ── 6-bot: @aniflag_bot ──
+    // ANIMELARI @grand_animelar_bot bilan UMUMIY (bitta baza) va media
+    // kanali ham o'sha — faqat nomi, matnlari va rasmlari boshqa.
+    "8797034207": {
+        name: "Aniflag",
+        emoji: "⛩",
+        item: "anime",
+        Item: "Anime",
+        plural: "animelar",
+        listCommand: "animes",
+        // Rasmlar: assets/images/aniflag/
+        imageDir: "aniflag",
+        startLines: "• Animelar o'zbek tilida\n• To'liq fasllar va qismlar\n• Yuqori sifatli videolar\n• Sun'iy intellektli qidiruv",
+        searchExamples: `• "One Piece"\n• "Iblislarni ovlaydigan bola haqidagi anime."\n• "Devor ortidagi ulkan maxluqlar."\n• "Ninja bo'lmoqchi bo'lgan sariq sochli bola."`,
+        uz: "animelarni", ru: "аниме", en: "anime",
+        worldUz: "anime olamiga", worldRu: "в мир аниме", worldEn: "the world of anime",
+
+        // O'Z profil matni — umumiy shablondan emas.
+        profile: {
+            uz:
+                "⛩ Aniflag — animelar o'zbek tilida, bir joyda.\n\n" +
+                "Nima qila olasiz:\n" +
+                "🔎 Nomi esingizda yo'qmi? Voqeasini yoki qahramonini yozing — sun'iy intellekt animeni topib beradi;\n" +
+                "🆔 Kodni bilsangiz bir soniyada oching;\n" +
+                "📚 Fasl va qismlarni boshidan, tartib bilan ko'ring;\n" +
+                "📥 Yuqori sifatda yuklab oling.\n\n" +
+                "Boshlash uchun pastdagi START tugmasini bosing!",
+            ru:
+                "⛩ Aniflag — аниме на узбекском языке, всё в одном месте.\n\n" +
+                "Что умеет:\n" +
+                "🔎 Забыли название? Расскажите сюжет или героя — искусственный интеллект найдёт аниме;\n" +
+                "🆔 Открывайте по коду за секунду;\n" +
+                "📚 Смотрите сезоны и серии с самого начала, по порядку;\n" +
+                "📥 Скачивайте в высоком качестве.\n\n" +
+                "Нажмите START, чтобы начать!",
+            en:
+                "⛩ Aniflag — anime in Uzbek, all in one place.\n\n" +
+                "What it does:\n" +
+                "🔎 Forgot the title? Tell the story or a character — the AI finds the anime;\n" +
+                "🆔 Open anything by its code in a second;\n" +
+                "📚 Watch seasons and episodes from the very start, in order;\n" +
+                "📥 Download in high quality.\n\n" +
+                "Press START to begin!",
+            shortUz: "⛩ Animelar o'zbek tilida. Nomi esdan chiqsa — voqeasini yozing, AI topib beradi.",
+            shortRu: "⛩ Аниме на узбекском. Забыли название — расскажите сюжет, AI найдёт.",
+            shortEn: "⛩ Anime in Uzbek. Forgot the title? Tell the story and the AI finds it.",
+        },
+    },
 };
 
 export const BRAND = BRANDS[CONFIG.BOT_ID] || BRANDS["8887969510"];
