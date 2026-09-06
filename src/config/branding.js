@@ -187,18 +187,53 @@ const BRANDS = {
         },
     },
 
-    // ── 3-bot: @doda_anime_bot ──
-    "8873652399": {
-        name: "Doda Anime",
+    // ── 3-bot: @grand_animelar_bot ──
+    // Eski @doda_anime_bot o'rniga keldi: media kanali ham, bazalari ham
+    // o'sha — faqat token, nom, matnlar va rasmlar almashdi.
+    "7951062852": {
+        name: "Grand Animelar",
         emoji: "🌸",
         item: "anime",
         Item: "Anime",
         plural: "animelar",
         listCommand: "animes",
-        startLines: "• Eng yangi animelar\n• Mashhur anime seriallar\n• Yuqori sifatli videolar\n• Qulay va tezkor qidiruv",
+        // Rasmlar: assets/images/grand-animelar/
+        imageDir: "grand-animelar",
+        startLines: "• Eng sara anime seriallar\n• Yangi chiqqan qismlar\n• Yuqori sifatli videolar\n• Sun'iy intellektli qidiruv",
         searchExamples: `• "Naruto"\n• "Bola titanga aylanadigan anime."\n• "O'lim daftarini topib olgan yigit."\n• "Bosh qahramoni pirat qiroli bo'lishni orzu qiladi."`,
         uz: "animelarni", ru: "аниме", en: "anime",
         worldUz: "anime olamiga", worldRu: "в мир аниме", worldEn: "the world of anime",
+
+        // O'Z profil matni — umumiy shablondan emas.
+        profile: {
+            uz:
+                "🌸 Grand Animelar — anime topishning eng oson yo'li.\n\n" +
+                "Nima qila olasiz:\n" +
+                "🔎 Nomini bilmasangiz — syujetini yoki qahramonini tasvirlab yozing, sun'iy intellekt animeni o'zi aniqlaydi;\n" +
+                "🆔 Kod orqali bir soniyada oching;\n" +
+                "📚 Anime seriallarni fasl va qismlari bo'yicha tartib bilan ko'ring;\n" +
+                "📥 Yuqori sifatda yuklab oling.\n\n" +
+                "Boshlash uchun pastdagi START tugmasini bosing!",
+            ru:
+                "🌸 Grand Animelar — самый простой способ найти аниме.\n\n" +
+                "Что умеет:\n" +
+                "🔎 Не знаете названия? Опишите сюжет или персонажа — искусственный интеллект найдёт сам;\n" +
+                "🆔 Открывайте аниме по коду за секунду;\n" +
+                "📚 Смотрите сериалы по сезонам и сериям, по порядку;\n" +
+                "📥 Скачивайте в высоком качестве.\n\n" +
+                "Нажмите START, чтобы начать!",
+            en:
+                "🌸 Grand Animelar — the easiest way to find anime.\n\n" +
+                "What it does:\n" +
+                "🔎 Don't know the title? Describe the plot or a character — the AI works out which anime you mean;\n" +
+                "🆔 Open any anime by its code in a second;\n" +
+                "📚 Watch series season by season, episode by episode;\n" +
+                "📥 Download in high quality.\n\n" +
+                "Press START to begin!",
+            shortUz: "🌸 Anime nomini bilmasangiz ham topib beradi. Syujetini yozing — qolganini AI qiladi.",
+            shortRu: "🌸 Найдёт аниме по описанию сюжета. Не помните название — просто расскажите историю.",
+            shortEn: "🌸 Finds anime from a description. Forgot the title? Just tell the story.",
+        },
     },
 };
 
