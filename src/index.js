@@ -36,6 +36,55 @@ const bot = new Bot(CONFIG.BOT_TOKEN, { client: { timeoutSeconds: 60 } });
 // Telegram 429 (flood wait) qaytarsa avtomatik kutib qayta urinadi
 bot.api.config.use(autoRetry({ maxRetryAttempts: 2, maxDelaySeconds: 5 }));
 
+/**
+ * ============================================
+ *  Tashxis izi — DEBUG_TRACE=1
+ * ============================================
+ *
+ * Yoqilganda har update'ning yo'li logga tushadi: qachon kirdi, qaysi
+ * bosqichgacha yetdi, har bir Telegram API chaqiruvi qancha vaqt oldi va
+ * qachon tugadi. "Bot javob bermayapti, lekin logda hech narsa yo'q"
+ * holatini aynan shu yechadi — osilgan joy darhol ko'rinadi.
+ *
+ * O'chiq holatda (odatiy) middleware'lar qo'shilmaydi, hech qanday
+ * qo'shimcha yuk yo'q. Yoqish: DEBUG_TRACE=1 pm2 restart <bot> --update-env
+ */
+const TRACE = process.env.DEBUG_TRACE === "1";
+const trace = (msg) => TRACE && console.log(`[Trace ${new Date().toISOString().slice(11, 23)}] ${msg}`);
+// Bosqich belgisi: TRACE o'chiq bo'lsa bo'sh o'tkazgich
+const checkpoint = (name) => TRACE
+  ? async (ctx, next) => { trace(`  ${ctx.update.update_id} .. ${name}`); return next(); }
+  : (ctx, next) => next();
+
+if (TRACE) {
+  bot.api.config.use(async (prev, method, payload, signal) => {
+    const t0 = Date.now();
+    const target = payload?.chat_id ?? "";
+    try {
+      const res = await prev(method, payload, signal);
+      trace(`  API ${method}(${target}) ${res.ok ? "OK" : "XATO " + res.description} ${Date.now() - t0}ms`);
+      return res;
+    } catch (e) {
+      trace(`  API ${method}(${target}) ULANISH XATOSI ${Date.now() - t0}ms: ${e.message}`);
+      throw e;
+    }
+  });
+
+  bot.use(async (ctx, next) => {
+    const t0 = Date.now();
+    const kind = Object.keys(ctx.update).find((k) => k !== "update_id");
+    const what = ctx.message?.text ?? ctx.callbackQuery?.data ?? "";
+    trace(`>> ${ctx.update.update_id} ${kind} from=${ctx.from?.id ?? "-"} chat=${ctx.chat?.id ?? "-"} "${what}"`);
+    try {
+      await next();
+      trace(`<< ${ctx.update.update_id} tugadi ${Date.now() - t0}ms`);
+    } catch (e) {
+      trace(`<< ${ctx.update.update_id} XATO ${Date.now() - t0}ms: ${e.message}`);
+      throw e;
+    }
+  });
+}
+
 // Guruh va kanallardagi xabar/tugmalarga javob bermaslik.
 // ISTISNO: reklama kanali — u yerdagi postlar va tugmalar broadcast
 // oqimini yuritadi, shuning uchun o'tkazib yuboriladi.
@@ -109,16 +158,21 @@ bot.use(
 );
 
 // Bitta user update'lari ketma-ket, turli userlar PARALLEL qayta ishlanadi
+bot.use(checkpoint("chegara -> navbat"));
 bot.use(sequentialize((ctx) => ctx.from?.id?.toString() ?? ctx.chat?.id?.toString()));
 
+bot.use(checkpoint("navbat -> sessiya"));
 bot.use(hydrate());
 bot.use(sessionMiddleware);
+bot.use(checkpoint("sessiya -> ro'yxat"));
 bot.use(stepExpiryMiddleware);
 // Obuna tekshiruvidan OLDIN: obunasi to'liq bo'lmagan odam ham
 // bizning foydalanuvchimiz — u ham bazaga tushishi kerak
 bot.use(registerMiddleware);
+bot.use(checkpoint("ro'yxat -> obuna"));
 bot.use(subscriptionMiddleware);
 
+bot.use(checkpoint("obuna -> handler"));
 setupRoutes(bot);
 
 const app = express();
