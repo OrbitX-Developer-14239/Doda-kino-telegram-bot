@@ -283,6 +283,57 @@ const BRANDS = {
             shortEn: "⛩ Anime in Uzbek. Forgot the title? Tell the story and the AI finds it.",
         },
     },
+    // ── 7-bot: @doda_media_bot ──
+    // ARALASH: kinolari Doda Kino / Mega Filmlar bilan, multfilmlari esa
+    // Asil Multfilm / Sara Multik bilan UMUMIY. O'z bazasi yo'q — backend
+    // ikkala bazadan birlashtirib beradi (BOT7_CONTENT_FROM).
+    "8877657924": {
+        name: "Doda Media",
+        emoji: "🎬",
+        // Ikkalasini ham qamraydigan so'zlar: "kino topilmadi" multfilm
+        // qidirgan odamga g'alati tuyuladi.
+        item: "kino yoki multfilm",
+        Item: "Kino yoki multfilm",
+        plural: "kino va multfilmlar",
+        listCommand: "media",
+        // Rasmlar: assets/images/doda-media/
+        imageDir: "doda-media",
+        startLines: "• Kinolar va multfilmlar bir joyda\n• Seriallar va multseriallar to'liq\n• Yuqori sifatli videolar\n• Sun'iy intellektli qidiruv",
+        searchExamples: `• "Titanic"\n• "Muzlik davri"\n• "O'yinchoqlar jonlanib qoladigan multfilm."\n• "Kosmosda omon qolish haqida film."`,
+        uz: "kino va multfilmlarni", ru: "фильмы и мультфильмы", en: "movies and cartoons",
+        worldUz: "kino olamiga", worldRu: "в мир кино", worldEn: "the world of film",
+
+        // O'Z profil matni — umumiy shablondan emas.
+        profile: {
+            uz:
+                "🎬 Doda Media — kinolar ham, multfilmlar ham bitta botda.\n\n" +
+                "Nima qila olasiz:\n" +
+                "🔎 Nomini bilmasangiz — syujetini yoki qahramonini yozing, sun'iy intellekt topib beradi;\n" +
+                "🆔 Kodni bilsangiz bir soniyada oching;\n" +
+                "📚 Seriallar va multseriallarni fasllari bo'yicha tartib bilan ko'ring;\n" +
+                "📥 Yuqori sifatda yuklab oling.\n\n" +
+                "Boshlash uchun pastdagi START tugmasini bosing!",
+            ru:
+                "🎬 Doda Media — фильмы и мультфильмы в одном боте.\n\n" +
+                "Что умеет:\n" +
+                "🔎 Не помните название? Опишите сюжет или героя — искусственный интеллект найдёт сам;\n" +
+                "🆔 Открывайте по коду за секунду;\n" +
+                "📚 Смотрите сериалы и мультсериалы по сезонам, по порядку;\n" +
+                "📥 Скачивайте в высоком качестве.\n\n" +
+                "Нажмите START, чтобы начать!",
+            en:
+                "🎬 Doda Media — films and cartoons in a single bot.\n\n" +
+                "What it does:\n" +
+                "🔎 Forgot the title? Describe the plot or a character — the AI finds it for you;\n" +
+                "🆔 Open anything by its code in a second;\n" +
+                "📚 Watch series and cartoon series season by season, in order;\n" +
+                "📥 Download in high quality.\n\n" +
+                "Press START to begin!",
+            shortUz: "🎬 Kinolar va multfilmlar bir joyda. Nomini bilmasangiz — syujetini yozing, AI topadi.",
+            shortRu: "🎬 Фильмы и мультфильмы в одном месте. Не помните название — опишите сюжет.",
+            shortEn: "🎬 Films and cartoons in one place. Forgot the title? Just describe the plot.",
+        },
+    },
 };
 
 export const BRAND = BRANDS[CONFIG.BOT_ID] || BRANDS["8887969510"];
