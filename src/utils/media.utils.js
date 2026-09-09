@@ -1,3 +1,4 @@
+import { BRAND } from "../config/branding.js";
 import { CONFIG } from "../config/index.js";
 
 /**
@@ -103,4 +104,27 @@ export async function getOrExtractFileId(ctx, channelId, msgId) {
     }
     
     return null;
+}
+
+/**
+ * Media (poster yoki video) yuborilmaganda ko'rsatiladigan xabar.
+ *
+ * Ilgari bu holatda handleUnknownCommand() chaqirilardi va foydalanuvchi
+ * "Noma'lum buyruq" degan javob olardi — u esa hech qanday buyruq
+ * yozmagan, ro'yxatdan film tanlagan edi. Xabar sababni yashirib,
+ * odamni ham, xatoni izlayotgan odamni ham chalg'itardi.
+ *
+ * Eng ko'p uchraydigan sabab: bot media saqlanadigan kanalda admin emas,
+ * shuning uchun copyMessage "chat not found" qaytaradi.
+ */
+export async function replyMediaUnavailable(ctx) {
+    const text =
+        `<b>❌ ${BRAND.Item}ni hozir yuborib bo'lmadi.</b>\n` +
+        `<blockquote>Video saqlangan kanaldan olishning imkoni bo'lmadi: xabar o'chirilgan yoki botga ruxsat berilmagan.</blockquote>\n\n` +
+        `<i>ℹ️ Iltimos, adminlarga xabar bering.</i>`;
+
+    await ctx.reply(text, {
+        parse_mode: "HTML",
+        reply_parameters: ctx.message ? { message_id: ctx.message.message_id } : undefined,
+    }).catch(() => { });
 }

@@ -2,8 +2,7 @@ import { ApiService } from "../services/api.service.js";
 import { BRAND } from "../config/branding.js";
 import { EpisodesKeyboard } from "../keyboards/episodes.keyboard.js";
 import { getFilmCaption, appendDescription } from "../utils/text.utils.js";
-import { parseTelegramMediaId } from "../utils/media.utils.js";
-import { handleUnknownCommand } from "./unknownCommand.handler.js";
+import { parseTelegramMediaId, replyMediaUnavailable } from "../utils/media.utils.js";
 import { SessionData } from "../services/session-data.service.js";
 
 export async function handleSendFilm(ctx) {
@@ -56,12 +55,11 @@ export async function handleSendFilm(ctx) {
             } else if (media && media.fileId) {
                 await ctx.api.sendPhoto(ctx.chat.id, media.fileId, options);
             } else {
-                await handleUnknownCommand(ctx);
+                await replyMediaUnavailable(ctx);
             }
         } catch (mediaError) {
             console.error("[Film] Media jo'natishda xatolik:", mediaError.message);
-            // await ctx.api.sendMessage(ctx.chat.id, "❌ Ushbu filmning rasmi bazada noto'g'ri saqlangan yoki o'chib ketgan. Iltimos adminlarga xabar bering.");
-            await handleUnknownCommand(ctx);
+            await replyMediaUnavailable(ctx);
         }
     } catch (error) {
         console.error("[Film] handleSendFilm error:", error.message);

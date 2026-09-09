@@ -71,7 +71,10 @@ export function setupRoutes(bot) {
 
             if (pendingText === "/start") return await handleStart(ctx);
             if (pendingText === "/help") return await handleHelp(ctx);
-            if (pendingText === "/films") return await handleFilms(ctx);
+            // Ro'yxat buyrug'i har botda boshqacha: /films, /cartoons, /animes.
+            // Qattiq "/films" yozilgani uchun multfilm va anime botlarda obunadan
+            // keyin saqlangan buyruq tanilmay, "Noma'lum buyruq" javobini olardi.
+            if (pendingText === `/${BRAND.listCommand}`) return await handleFilms(ctx);
             if (pendingText === "/search") return await searchByName(ctx);
             if (pendingText === "/code") return await searchByCode(ctx);
 

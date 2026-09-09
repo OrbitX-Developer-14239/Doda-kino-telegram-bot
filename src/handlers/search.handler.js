@@ -7,8 +7,7 @@ import { ApiService } from "../services/api.service.js";
 import { CONFIG } from "../config/index.js";
 import { canceledSearches } from "../store/memory.store.js";
 import { getFilmCaption, getEpisodeCaption, generateFilmsListMessage } from "../utils/text.utils.js";
-import { parseTelegramMediaId, getOrExtractFileId } from "../utils/media.utils.js";
-import { handleUnknownCommand } from "./unknownCommand.handler.js";
+import { parseTelegramMediaId, getOrExtractFileId, replyMediaUnavailable } from "../utils/media.utils.js";
 import { HistoryService } from "../services/history.service.js";
 
 import { FileIdService, brandImage } from "../services/fileid.service.js";
@@ -312,11 +311,11 @@ export async function executeSearchByCode(ctx) {
                 } else if (posterMedia && posterMedia.fileId) {
                     await ctx.api.sendPhoto(ctx.chat.id, posterMedia.fileId, options);
                 } else {
-                    await handleUnknownCommand(ctx);
+                    await replyMediaUnavailable(ctx);
                 }
             } catch (mediaError) {
                 console.error("[Search] Film media jo'natishda xatolik:", mediaError.message);
-                await handleUnknownCommand(ctx);
+                await replyMediaUnavailable(ctx);
             }
 
             await ctx.api.deleteMessage(ctx.chat.id, waitMsg.message_id).catch(() => { });

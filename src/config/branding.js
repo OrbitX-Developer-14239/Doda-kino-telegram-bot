@@ -295,7 +295,7 @@ const BRANDS = {
         item: "kino yoki multfilm",
         Item: "Kino yoki multfilm",
         plural: "kino va multfilmlar",
-        listCommand: "media",
+        listCommand: "films",
         // Rasmlar: assets/images/doda-media/
         imageDir: "doda-media",
         startLines: "• Kinolar va multfilmlar bir joyda\n• Seriallar va multseriallar to'liq\n• Yuqori sifatli videolar\n• Sun'iy intellektli qidiruv",
