@@ -26,13 +26,25 @@ export async function registerMiddleware(ctx, next) {
     }
 
     if (!ctx.session.is_registered) {
-        ctx.session.is_registered = true;
-
-        ApiService.createUser({
+        /**
+         * Bayroq FAQAT saqlash muvaffaqiyatli bo’lgandan keyin qo’yiladi.
+         *
+         * Ilgari u so’rovdan OLDIN qo’yilardi: backend o’sha lahzada
+         * javob bermasa (deploy, tarmoq), odam bazaga tushmasdi va sessiya
+         * 7 kun yashagani uchun QAYTA URINILMASDI ham — haqiqiy
+         * foydalanuvchi butunlay yo’qolardi.
+         *
+         * Natijani kutish kerak: sessiya middleware zanjiri tugagach
+         * saqlanadi, ya’ni javobdan keyin qo’yilgan bayroq yozilmay qolardi.
+         * Bu bitta foydalanuvchida haftada bir marta sodir bo’ladi.
+         */
+        const saved = await ApiService.createUser({
             telegram_id: ctx.from.id,
             username: ctx.from.username,
             first_name: ctx.from.first_name,
-        }).catch((error) => console.error("[Register] createUser error:", error.message));
+        });
+
+        if (saved) ctx.session.is_registered = true;
     }
 
     return next();
