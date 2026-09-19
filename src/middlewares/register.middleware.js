@@ -25,6 +25,13 @@ export async function registerMiddleware(ctx, next) {
         return next();
     }
 
+    // Botni bloklash / blokdan chiqarish (my_chat_member) — bu botga
+    // "yozish" emas: bunday hodisa foydalanuvchini faol deb belgilab,
+    // uning "bloklagan" holatini o'chirib yubormasligi kerak.
+    if (ctx.update.my_chat_member) {
+        return next();
+    }
+
     if (!ctx.session.is_registered) {
         /**
          * Bayroq FAQAT saqlash muvaffaqiyatli bo’lgandan keyin qo’yiladi.

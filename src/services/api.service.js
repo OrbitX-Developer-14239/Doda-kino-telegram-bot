@@ -239,6 +239,20 @@ export const ApiService = {
         }
     },
 
+    /**
+     * Foydalanuvchi botni bloklagani ("kicked") yoki blokdan chiqargani
+     * ("member") — shaxsiy chatdagi my_chat_member hodisasidan.
+     */
+    async setBotStatus(telegram_id, status) {
+        try {
+            const response = await apiClient.post("/user/bot-status", { telegram_id, status });
+            return response.data;
+        } catch (error) {
+            console.error("[API] setBotStatus error:", error.message);
+            return null;
+        }
+    },
+
     async createUser(user) {
         try {
             const response = await apiClient.post("/user", user);

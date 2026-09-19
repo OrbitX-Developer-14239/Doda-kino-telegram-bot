@@ -18,9 +18,22 @@ export async function handleMyChatMember(ctx) {
 
     const chat = update.chat;
     const member = update.new_chat_member;
+    if (!chat) return;
 
-    // Shaxsiy suhbatlar ro'yxatga kirmaydi — faqat kanal va guruhlar
-    if (!chat || chat.type === "private") return;
+    /**
+     * SHAXSIY CHAT: foydalanuvchi botni bloklasa Telegram darhol
+     * "kicked", blokdan chiqarsa "member" yuboradi. Ilgari bu hodisa
+     * tashlab yuborilardi va bloklash faqat reklama yuborilganda (403)
+     * bilinardi — statistikadagi "bloklagan" soni eskirib qolardi.
+     */
+    if (chat.type === "private") {
+        const status = member?.status;
+        if (status !== "kicked" && status !== "member") return;
+        const userId = update.from?.id ?? chat.id;
+        await ApiService.setBotStatus(String(userId), status);
+        console.log(`[MyChatMember] ${userId} botni ${status === "kicked" ? "BLOKLADI" : "blokdan chiqardi"}`);
+        return;
+    }
 
     const status = member?.status || "member";
 
