@@ -4,6 +4,7 @@ import { ApiService } from "../services/api.service.js";
 import { KeyboardFactory } from "../keyboards/inline.menus.js";
 import { SUBSCRIBED_STATUSES, isPrivateBypassUser, CONFIG } from "../config/index.js";
 import { BRAND } from "../config/branding.js";
+import { escapeHtml } from "../utils/text.utils.js";
 
 /**
  * ============================================
@@ -39,7 +40,7 @@ async function handleJoinTest(ctx) {
     );
 
     const text =
-        `<b>Assalomu alaykum, ${req.from.first_name || ""}!</b>\n\n` +
+        `<b>Assalomu alaykum, ${escapeHtml(req.from.first_name)}!</b>\n\n` +
         `<blockquote>So'rovingiz qabul qilindi. ${BRAND.name} botida ` +
         `minglab ${BRAND.plural} sizni kutmoqda.</blockquote>\n\n` +
         `<b>Boshlash uchun pastdagi tugmani bosing 👇</b>`;

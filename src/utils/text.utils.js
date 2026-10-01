@@ -2,6 +2,21 @@ import { CONFIG } from "../config/index.js";
 import { BRAND } from "../config/branding.js";
 
 /**
+ * HTML rejimdagi xabarga tashqi matn (foydalanuvchi ismi, so'rovi, film
+ * nomi, tavsifi) qo'yishdan oldin ekranlaydi.
+ *
+ * Telegram teg bo'lmagan <, > va & ni qabul qilmaydi: matnda "<abc" yoki
+ * "Ali & Vali" bo'lsa xabar umuman yuborilmaydi ("can't parse entities"),
+ * foydalanuvchi esa javobsiz qoladi.
+ */
+export function escapeHtml(value) {
+    return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+}
+
+/**
  * Film sarlavhasi.
  *
  * @param {object} film
@@ -20,21 +35,21 @@ export function getFilmCaption(film, season = null) {
         seasonLine = `<b>📀 Fasllar:</b> ${seasons} ta\n`;
     }
 
-    return `<b>${film.name}</b>\n\n` +
+    return `<b>${escapeHtml(film.name)}</b>\n\n` +
         `<blockquote>${seasonLine}<b>📗 Qismlar:</b> ${film.episodesCount} ta\n` +
         `<b>📅 Chiqarilgan:</b> ${film.year}-yil\n` +
-        `<b>🚩 Mamlakat:</b> ${film.country}\n` +
+        `<b>🚩 Mamlakat:</b> ${escapeHtml(film.country)}\n` +
         `<b>🆔 ${BRAND.Item} kodi:</b> ${film.code}\n` +
-        `<b>🎞 Janrlar:</b> <i>${film.genres?.join(", ") || "Mavjud emas"}</i></blockquote>`;
+        `<b>🎞 Janrlar:</b> <i>${escapeHtml(film.genres?.join(", ") || "Mavjud emas")}</i></blockquote>`;
 }
 
 export function getEpisodeCaption(episode) {
-    return `<b>${episode.name}</b>\n\n` +
+    return `<b>${escapeHtml(episode.name)}</b>\n\n` +
         `<blockquote><b>📕 Qism:</b> ${episode.episodeNumber}\n` +
         `<b>📅 Chiqarilgan:</b> ${episode.releaseYear}\n` +
-        `<b>🚩 Mamlakat:</b> ${episode.country}\n` +
+        `<b>🚩 Mamlakat:</b> ${escapeHtml(episode.country)}\n` +
         `<b>🆔 Qism Kodi:</b> ${episode.code}\n` +
-        `<b>🎞 Janrlar:</b> <i>${episode.genres ? episode.genres.join(", ") : "Mavjud emas"}</i></blockquote>`;
+        `<b>🎞 Janrlar:</b> <i>${escapeHtml(episode.genres ? episode.genres.join(", ") : "Mavjud emas")}</i></blockquote>`;
 }
 export function generateFilmsListMessage(userText, films, page = 1) {
     const pageSize = CONFIG.ITEMS_PER_PAGE;
@@ -43,10 +58,10 @@ export function generateFilmsListMessage(userText, films, page = 1) {
 
     const listText = currentFilms.map((film, index) => {
         const globalIndex = startIdx + index + 1;
-        return `<b>${globalIndex}.</b> ${film.name} (${film.year}) • 🆔: ${film.code}`;
+        return `<b>${globalIndex}.</b> ${escapeHtml(film.name)} (${film.year}) • 🆔: ${film.code}`;
     }).join("\n");
 
-    return `<b>"${userText}"</b> so'rovi bo'yicha topilgan natijalar:\n\n` +
+    return `<b>"${escapeHtml(userText)}"</b> so'rovi bo'yicha topilgan natijalar:\n\n` +
         `<b>📄 Natijalar: ${startIdx + 1}-${startIdx + currentFilms.length} / ${films.length}</b>\n` +
         `<blockquote>${listText}</blockquote>`;
 }
@@ -73,6 +88,8 @@ export function appendDescription(baseCaption, description) {
         desc = desc.slice(0, available - 1).trimEnd() + "…";
     }
 
+    // Avval qisqartiriladi, keyin ekranlanadi: "&lt;" ko'rinishda 1 belgi,
+    // shuning uchun uzunlik xom matn bo'yicha hisoblanadi.
     return baseCaption +
-        `\n\n<b>📃 Qisqacha tavsif:</b>\n<blockquote><i>${desc}</i></blockquote>`;
+        `\n\n<b>📃 Qisqacha tavsif:</b>\n<blockquote><i>${escapeHtml(desc)}</i></blockquote>`;
 }

@@ -5,6 +5,7 @@ import { InputFile } from "grammy";
 import { FilmsKeyboard } from "../keyboards/films.keyboard.js";
 import { CONFIG } from "../config/index.js";
 import { FileIdService, brandImage } from "../services/fileid.service.js";
+import { escapeHtml } from "../utils/text.utils.js";
 
 const IMAGE_KEY = "films_photo";
 const DEFAULT_IMAGE_PATH = brandImage("assets/images/films.png");
@@ -61,7 +62,7 @@ export async function handleFilms(ctx, page = 1) {
 
         const filmList = films.map((film, i) => {
             const globalIndex = firstFilmNumber + i;
-            return `<b>${globalIndex}.</b> ${film.name} (${film.year || ''}) <b>•</b> 🆔: ${film.code}`;
+            return `<b>${globalIndex}.</b> ${escapeHtml(film.name)} (${film.year || ''}) <b>•</b> 🆔: ${film.code}`;
         }).join("\n");
 
         const caption =

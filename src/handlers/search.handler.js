@@ -6,7 +6,7 @@ import { EpisodesKeyboard } from "../keyboards/episodes.keyboard.js";
 import { ApiService } from "../services/api.service.js";
 import { CONFIG } from "../config/index.js";
 import { canceledSearches } from "../store/memory.store.js";
-import { getFilmCaption, getEpisodeCaption, generateFilmsListMessage } from "../utils/text.utils.js";
+import { getFilmCaption, getEpisodeCaption, generateFilmsListMessage, escapeHtml } from "../utils/text.utils.js";
 import { parseTelegramMediaId, getOrExtractFileId, replyMediaUnavailable } from "../utils/media.utils.js";
 import { HistoryService } from "../services/history.service.js";
 
@@ -82,7 +82,7 @@ export async function searchByName(ctx) {
 
 export async function executeSearchByName(ctx) {
     const searchingMessage =
-        `<blockquote><b>"${ctx.message.text}"</b> so'rovi bo'yicha tahlil qilinmoqda...</blockquote>\n\n` +
+        `<blockquote><b>"${escapeHtml(ctx.message.text)}"</b> so'rovi bo'yicha tahlil qilinmoqda...</blockquote>\n\n` +
         `<i>⏳ Natijalar tayyorlanmoqda, biroz kuting...</i>`;
 
     const notFoundMessage =
@@ -204,7 +204,7 @@ export async function executeSearchByCode(ctx) {
     const numCode = Number(code);
 
     const waitMsg = await ctx.reply(
-        `<blockquote><b>🆔 ${code}</b> kodi bo'yicha qidirilmoqda...</blockquote>\n\n` +
+        `<blockquote><b>🆔 ${escapeHtml(code)}</b> kodi bo'yicha qidirilmoqda...</blockquote>\n\n` +
         `<i>⏳ Biroz kuting...</i>`,
         {
             parse_mode: "HTML",
@@ -214,7 +214,7 @@ export async function executeSearchByCode(ctx) {
 
     const notFoundMessage =
         `<b>❌ Afsus, hech qanday mos ${BRAND.item} topilmadi.</b>\n` +
-        `<blockquote>Qidiruv natijasida siz yuborgan <b>"${code}"</b> kodiga mos ${BRAND.item} topilmadi.</blockquote>\n\n` +
+        `<blockquote>Qidiruv natijasida siz yuborgan <b>"${escapeHtml(code)}"</b> kodiga mos ${BRAND.item} topilmadi.</blockquote>\n\n` +
         `<b><i>💡 Barcha ${BRAND.plural} ro'yxatini ko'rish uchun /${BRAND.listCommand} buyrug'ini yozing.</i></b>`;
 
     try {
