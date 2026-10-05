@@ -86,7 +86,9 @@ export async function handleAdminContact(ctx) {
             ctx.session.step = "idle";
             ctx.session.admin = null;
 
-            if (response && response.success) {
+            const isSuccess = response?.success === true && payload?.success !== false;
+
+            if (isSuccess) {
                 const successText = `<b>✅ Hisob muvaffaqiyatli ulandi!</b>\n\n<blockquote><i>Telegram hisobingiz admin paneliga bog'landi. Endi Telegram orqali tizimga kira olasiz.</i></blockquote>`;
                 await deleteLoading();
                 await ctx.reply(successText, {
@@ -95,7 +97,7 @@ export async function handleAdminContact(ctx) {
                     reply_parameters: { message_id: contactMsgId },
                 });
             } else {
-                const errorMsg = payload?.message || "Hisob ulanmadi. Iltimos qayta urinib ko'ring.";
+                const errorMsg = escapeHtml(payload?.message || response?.message || "Hisob ulanmadi. Iltimos qayta urinib ko'ring.");
                 const failText = `<b>⚠️ Xatolik!</b>\n\n<blockquote><i>${errorMsg}</i></blockquote>`;
                 await deleteLoading();
                 await ctx.reply(failText, {

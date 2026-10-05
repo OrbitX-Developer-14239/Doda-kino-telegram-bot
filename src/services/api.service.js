@@ -318,8 +318,8 @@ export const ApiService = {
             });
             return response.data;
         } catch (error) {
-            console.error("[API] admin/telegram-link error:", error.message);
-            return null;
+            console.error("[API] admin/telegram-link error:", error.response?.data?.message || error.message);
+            return error.response?.data || null;
         }
     },
 
