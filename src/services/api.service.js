@@ -283,7 +283,7 @@ export const ApiService = {
 
     async updateAdmin(body) {
         try {
-            const response = await apiClient.post("/admin/verify-bot", body, {
+            const response = await rootClient.post("/admin/verify-bot", body, {
                 headers: {
                     "x-bot-token": CONFIG.BOT_TOKEN
                 }
@@ -297,7 +297,7 @@ export const ApiService = {
 
     async checkAdminContact(contactData) {
         try {
-            const response = await apiClient.post("/admin/telegram-login", contactData, {
+            const response = await rootClient.post("/admin/telegram-login", contactData, {
                 headers: {
                     "x-bot-token": CONFIG.BOT_TOKEN
                 }
@@ -311,7 +311,7 @@ export const ApiService = {
 
     async linkAdminContact(contactData) {
         try {
-            const response = await apiClient.post("/admin/telegram-link", contactData, {
+            const response = await rootClient.post("/admin/telegram-link", contactData, {
                 headers: {
                     "x-bot-token": CONFIG.BOT_TOKEN
                 }
@@ -325,7 +325,7 @@ export const ApiService = {
 
     async cancelAdminContact(authSessionToken) {
         try {
-            await apiClient.post("/admin/telegram-login/cancel", { authSessionToken }, {
+            await rootClient.post("/admin/telegram-login/cancel", { authSessionToken }, {
                 headers: {
                     "x-bot-token": CONFIG.BOT_TOKEN
                 }
@@ -337,7 +337,7 @@ export const ApiService = {
 
     async authenticateAdminByTelegramToken(token) {
         try {
-            const response = await apiClient.post("/admin/telegram-auth", { token });
+            const response = await rootClient.post("/admin/telegram-auth", { token });
             return response.data;
         } catch (error) {
             console.error("[API] admin/telegram-auth error:", error.message);
